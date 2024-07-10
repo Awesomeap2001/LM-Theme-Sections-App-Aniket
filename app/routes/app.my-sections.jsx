@@ -19,7 +19,8 @@ import {
   InlineGrid,
 } from "@shopify/polaris";
 import "./css/my-sections-styles.css";
-import { json, useLoaderData, useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import { json } from "@remix-run/node";
 import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
 import db from "../db.server";
 
@@ -225,8 +226,8 @@ export default function MySections() {
   return (
     <Page>
       <BlockStack gap="500">
-        <InlineStack>
-          <Box width="50px">
+        <InlineStack blockAlign="center" gap="200">
+          <Box>
             <Icon source='<svg height="150px" id="Capa_1" style="enable-background:new 0 0 70 50;" version="1.1" viewBox="0 0 70 50" width="100px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M10,40H5c-2.762,0-5,2.238-5,5s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,40,10,40z M10,20H5c-2.762,0-5,2.238-5,5  s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,20,10,20z M10,0H5C2.238,0,0,2.238,0,5s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,0,10,0  z M30,10h35c2.762,0,5-2.238,5-5s-2.238-5-5-5H30c-2.762,0-5,2.238-5,5S27.238,10,30,10z M65,20H30c-2.762,0-5,2.238-5,5  s2.238,5,5,5h35c2.762,0,5-2.238,5-5S67.762,20,65,20z M65,40H30c-2.762,0-5,2.238-5,5s2.238,5,5,5h35c2.762,0,5-2.238,5-5  S67.762,40,65,40z"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>'></Icon>
           </Box>
           <Box>
@@ -309,7 +310,6 @@ export default function MySections() {
           style={{
             maxWidth: "700px",
             margin: "auto",
-            border: "1px solid var(--p-color-border)",
           }}
         >
           <Pagination
