@@ -1,0 +1,423 @@
+{{ 'lm-testimonial-slider-min.css' | asset_url | stylesheet_tag }}
+{{ 'lm-testimonial-slider-min.js' | asset_url | script_tag }}
+
+<div id="Lm-testimonial-{{ section.id }}" class="lm-testimonial-section">
+  <div>
+    <h1 class="lm-testimonial-heading-text">{{ section.settings.heading }}</h1>
+  </div>
+  <div class="lm-testimonial-container">
+    <div class="lm-testimonial-wrapper swiper-wrapper">
+      {% for block in section.blocks %}
+        <div class="lm-testimonial-slide swiper-slide">
+          <div class="lm-testimonial-box" style="background-color: {{ block.settings.box-bg-color }}">
+            <img src="{{ block.settings.image | image_url: width: 300 }}">
+            <div class="lm-testimonial-text">
+              <h2
+                class="lm-heading-inner"
+                style="color: {{ block.settings.headingcolor }}; font-size: {{ section.settings.slide-heading-font-size }}px"
+              >
+                {{ block.settings['slide-text'] }}
+              </h2>
+              <div style="font-size: {{ section.settings.desc-size }}px; font-family: {{ section.settings.desc-family.family }}, {{ section.settings.desc-family.fallback_families }}; color: {{ block.settings.desc-color }}">
+                {{ block.settings.desc }}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="lm-pagination"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var desktopSlidesPerView = parseInt('{{ section.settings.desktop_slides_per_view }}', 10);
+    var mobileSlidesPerView = parseInt('{{ section.settings.mobile_slides_per_view }}', 10);
+    var slideAutoplayDelay = parseInt('{{ section.settings.slide_autoplay_delay }}', 10);
+
+    var autoplayEnabled = {% if section.settings.slide_autoplay_true_false %} false {% else %} true {% endif %};
+
+    var mySwiper = new Swiper('.lm-testimonial-container', {
+      direction: 'horizontal',
+      loop: true,
+      slidesPerView: desktopSlidesPerView,
+      pagination: {
+        el: '.lm-pagination',
+        clickable: true,
+      },
+      autoplay: autoplayEnabled ? {
+        delay: slideAutoplayDelay,
+        disableOnInteraction: true,
+      } : true,
+      breakpoints: {
+        // when window width is <= 300px
+        300: {
+          slidesPerView: mobileSlidesPerView,
+        },
+        // when window width is <= 768px
+        768: {
+          slidesPerView: 2,
+        },
+        // when window width is <= 1024px
+        1024: {
+          slidesPerView: 3,
+        },
+        // when window width is <= 1250px
+        1250: {
+          slidesPerView: desktopSlidesPerView,
+        },
+      },
+    });
+  });
+</script>
+
+<style>
+  {{ section.settings.heading-font-family | font_face }}
+  {{ section.settings.slide-heading-font-family | font_face }}
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px 0 5px;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-pagination {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-pagination .swiper-pagination-bullet {
+    background-color: {{ section.settings.lm-pagination-color }};
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-box {
+    padding: 17px 25px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-heading-text {
+    font-size: {{ section.settings.heading-font-size }}px;
+    color: {{ section.settings.heading-font-color }};
+    font-family: {{ section.settings.heading-font-family.family }}, {{ section.settings.heading-font-family.fallback_families }};
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-text .lm-heading-inner {
+    font-size: 25px;
+    font-family: {{ section.settings.slide-heading-font-family.family }}, {{ section.settings.slide-heading-font-family.fallback_families }};
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-box img {
+    width: 100px;
+    height: 100px;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+  }
+
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-slide .swiper-slide {
+    margin: 10px;
+  }
+
+  #Lm-testimonial-{{ section.id }}.lm-testimonial-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    gap: 20px;
+    padding: {{ section.settings.padding_top }}px 40px {{ section.settings.padding_bottom }}px;
+    margin: auto;
+    overflow: hidden;
+    flex-direction: column;
+    background-color: {{ section.settings.main-bg-color }};
+  }
+
+  @media only screen and (min-width: 300px) {
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-box {
+      width: 96% !important;
+    }
+  }
+
+  @media only screen and (max-width:767px) {
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-box {
+      flex-direction: column;
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-container {
+      width: 100%;
+    }
+
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-slide .swiper-slide {
+      width: 100% !important;
+    }
+
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-main {
+      flex-direction: column;
+    }
+
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-wrapper .swiper-wrapper {
+      width: 100%;
+      overflow: hidden;
+      justify-content: center;
+    }
+
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-container {
+      width: 100%;
+    }
+
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-slide .swiper-slide {
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "👉 ĹМ Testimonial Slider",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Styles"
+    },
+    {
+      "type": "color",
+      "id": "main-bg-color",
+      "label": "Background Color"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "default": 25,
+      "label": "Padding Top",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "default": 25,
+      "label": "Padding Bottom",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "header",
+      "content": "Main Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Enter heading here"
+    },
+    {
+      "type": "range",
+      "id": "heading-font-size",
+      "label": "Font Size",
+      "max": 50,
+      "min": 10,
+      "default": 20
+    },
+    {
+      "type": "font_picker",
+      "id": "heading-font-family",
+      "label": "Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "heading-font-color",
+      "label": "Color"
+    },
+    {
+      "type": "header",
+      "content": "Testimonial Section Styles"
+    },
+    {
+      "type": "range",
+      "id": "slide-heading-font-size",
+      "label": "Testimonial Heading Font Size",
+      "max": 50,
+      "min": 10,
+      "default": 20
+    },
+    {
+      "type": "font_picker",
+      "id": "slide-heading-font-family",
+      "label": "Testimonial Heading Font Family",
+      "default": "sans-serif"
+    }, 
+    {
+      "type": "range",
+      "id": "desc-size",
+      "label": "Testimonial Description Font Size",
+      "max": 50,
+      "min": 10,
+      "default": 15
+    },
+    {
+      "type": "font_picker",
+      "id": "desc-family",
+      "label": "Testimonial Description Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "header",
+      "content": "Slider Bullet Color"
+    },
+    {
+      "type": "color",
+      "id": "lm-pagination-color",
+      "label": "Color"
+    },
+    {
+      "type": "header",
+      "content": "Slides Per View"
+    },
+    {
+      "type": "select",
+      "id": "desktop_slides_per_view",
+      "label": "Desktop",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Slide"
+        },
+        {
+          "value": "2",
+          "label": "2 Slides"
+        },
+        {
+          "value": "3",
+          "label": "3 Slides"
+        },
+        {
+          "value": "4",
+          "label": "4 Slides"
+        },
+        {
+          "value": "5",
+          "label": "5 Slides"
+        },
+        {
+          "value": "6",
+          "label": "6 Slides"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "mobile_slides_per_view",
+      "label": "Mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Slide"
+        },
+        {
+          "value": "2",
+          "label": "2 Slides"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "checkbox",
+      "id": "slide_autoplay_true_false",
+      "label": "AutoPlay Slide",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "slide_autoplay_delay",
+      "label": "Delay",
+      "min": 2500,
+      "max": 7000,
+      "step": 500,
+      "default": 2500
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Slide",
+      "type": "slide",
+      "settings": [
+       
+        {
+          "type": "color",
+          "id": "box-bg-color",
+          "label": "Testimonial Background Color"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Testimonial Image"
+        },
+        {
+          "type": "header",
+          "content": "Testimonial Heading"
+        },
+        {
+          "type": "text",
+          "id": "slide-text",
+          "label": "Heading",
+          "default": "Your heading"
+        },
+        {
+          "type": "color",
+          "id": "headingcolor",
+          "label": "Color"
+        },
+        {
+          "type": "header",
+          "content": "Testimonial Content"
+        },
+        {
+          "type": "richtext",
+          "id": "desc",
+          "label": "Description"
+        },
+        {
+          "type": "color",
+          "id": "desc-color",
+          "label": "Color"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Testimonial Slider",
+      "category": "custom"
+    }
+  ]
+}
+{% endschema %}
