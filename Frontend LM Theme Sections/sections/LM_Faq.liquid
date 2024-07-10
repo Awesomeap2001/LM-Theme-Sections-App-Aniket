@@ -74,9 +74,11 @@
     #lm-faq-{{ section.id }} .lm-faq-group h3.question {
     color: {{ section.settings.question_color }};
     margin: 0;
-    padding: 0;
+    padding: 0;s
     }
-
+    .lm-faq-group:hover h3.question{
+      color: {{ section.settings.icon_color }} !important;
+    }
     #lm-faq-{{ section.id }} .lm-faq-group .answer {
     color: {{ section.settings.answer_color }};
     display: none;
@@ -96,7 +98,7 @@
     top: 32px;
     font-size: 35px;
     line-height: 0;
-    color: {{ section.settings.headline_color }};
+    color: {{ section.settings.icon_color }};
     right: 0;
     }
 
@@ -108,7 +110,7 @@
     line-height: 0;
     right: 5px;
     top: 32px;
-    color: {{ section.settings.headline_color }};
+    color: {{ section.settings.icon_color }};
     }
     .lm-faq-col{
     width: 50%;
@@ -131,6 +133,7 @@
     .lm-faq-image img{
     width: 100%;
   }
+
     .lm-faq-col .lm-faq-group:last-child{
     border-bottom : none;
     }
@@ -142,6 +145,9 @@
     }
    .lm-faq-col [data-active="true"]{
     padding-bottom: 10px;
+    }
+    .lm-faq-col [data-active="true"] .question{
+      color: {{ section.settings.icon_color }} !important;
     }
     .lm-right{
       flex-direction: row-reverse;
@@ -230,7 +236,7 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Add Image"
+      "label": "Add Image"      
     },
     {
       "type": "select",
@@ -250,7 +256,7 @@
     },
     {
       "type": "header",
-      "content": "Heading"
+      "content": "Main Heading"
     },
     {
       "type": "text",
@@ -266,7 +272,7 @@
       "step": 1,
       "unit": "px",
       "label": "Text Size",
-      "default": 15
+      "default": 25
     },
     {
       "type": "range",
@@ -297,56 +303,7 @@
         }
       ],
       "default": "left"
-    },
-    {
-      "type": "header",
-      "content": "Text",
-      "info": "Set the text size for your widget"
-    },
-    {
-      "type": "font_picker",
-      "id": "text_font",
-      "label": "Text Font",
-      "default": "sans-serif"
-    },
-    {
-      "type": "range",
-      "id": "text_size",
-      "min": 10,
-      "max": 50,
-      "step": 1,
-      "unit": "px",
-      "label": "Text Size",
-      "default": 25
-    },
-    {
-      "type": "select",
-      "id": "text_line_height",
-      "label": "Text Line Height",
-      "default": "1.15",
-      "options": [
-        {
-          "value": "1.05",
-          "label": "1.05"
-        },
-        {
-          "value": "1.15",
-          "label": "1.15"
-        },
-        {
-          "value": "1.25",
-          "label": "1.25"
-        },
-        {
-          "value": "1.5",
-          "label": "1.5"
-        },
-        {
-          "value": "1.75",
-          "label": "1.75"
-        }
-      ]
-    },
+    },  
     {
       "type": "font_picker",
       "id": "headline_font",
@@ -361,7 +318,7 @@
       "step": 1,
       "unit": "px",
       "label": "Headline Size",
-      "default": 25
+      "default": 18
     },
     {
       "type": "range",
@@ -371,7 +328,7 @@
       "step": 1,
       "unit": "px",
       "label": "Mobile Headline Size",
-      "default": 25
+      "default": 16
     },
     {
       "type": "select",
@@ -403,13 +360,62 @@
     },
     {
       "type": "header",
+      "content": "Text",
+      "info": "Set the text size for your widget"
+    },
+    {
+      "type": "font_picker",
+      "id": "text_font",
+      "label": "Text Font",
+      "default": "sans-serif"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Text Size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "text_line_height",
+      "label": "Text Line Height",
+      "default": "1.25",
+      "options": [
+        {
+          "value": "1.05",
+          "label": "1.05"
+        },
+        {
+          "value": "1.15",
+          "label": "1.15"
+        },
+        {
+          "value": "1.25",
+          "label": "1.25"
+        },
+        {
+          "value": "1.5",
+          "label": "1.5"
+        },
+        {
+          "value": "1.75",
+          "label": "1.75"
+        }
+      ]
+    },
+    {
+      "type": "header",
       "content": "Colors",
       "info": "Set colors for the section."
     },
     {
       "type": "color_background",
       "id": "background_color",
-      "default": "linear-gradient(164deg, #FFF 0%, #FFF 100%)",
+      "default": "linear-gradient(207deg, rgba(171, 103, 233, 1), rgba(105, 101, 231, 1) 100%)",
       "label": "Outer Background Color"
     },
     {
@@ -429,6 +435,12 @@
       "id": "answer_color",
       "default": "#555555",
       "label": "Answer Color"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon Color",
+      "default": "#df5c34"
     },
     {
       "type": "header",

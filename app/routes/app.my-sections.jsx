@@ -16,12 +16,29 @@ import {
   Box,
   InlineStack,
   Pagination,
+  InlineGrid,
 } from "@shopify/polaris";
 import "./css/my-sections-styles.css";
-import { useNavigate } from "@remix-run/react";
+import { json, useLoaderData, useNavigate } from "@remix-run/react";
 import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
+import db from "../db.server";
+
+export const loader = async () => {
+  try {
+    const categories = await db.category.findMany();
+    const sections = await db.section.findMany();
+    if (sections.length === 0) {
+      throw new Response("No sections found", { status: 404 });
+    }
+    return json({ categories, sections });
+  } catch (error) {
+    console.error("Error fetching sections:", error);
+    throw new Error("Failed to fetch sections data");
+  }
+};
 
 export default function MySections() {
+  const { sections, categories } = useLoaderData();
   const [selected, setSelected] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const navigate = useNavigate(); // Get the navigate function from Remix.
@@ -144,27 +161,6 @@ export default function MySections() {
     },
   ];
 
-  function disambiguateLabel(key, value) {
-    switch (key) {
-      case "moneySpent":
-        return `Money spent is between $${value[0]} and $${value[1]}`;
-      case "taggedWith":
-        return `Tagged with ${value}`;
-      case "accountStatus":
-        return value.map((val) => `Customer ${val}`).join(", ");
-      default:
-        return value;
-    }
-  }
-
-  function isEmpty(value) {
-    if (Array.isArray(value)) {
-      return value.length === 0;
-    } else {
-      return value === "" || value == null;
-    }
-  }
-
   const handleAccountStatusRemove = useCallback(
     () => setAccountStatus(undefined),
     [],
@@ -188,20 +184,20 @@ export default function MySections() {
   ]);
 
   // Flatten the imageGrids array
-  const flattenedImageGrids = imageGrids.flat();
-
+  // const flattenedImageGrids = imageGrids.flat();
+  // console.log(selected);
   const filteredImageGrids =
     selected === 0
-      ? flattenedImageGrids.filter((gridItem) =>
+      ? sections.filter((gridItem) =>
           gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
         )
-      : flattenedImageGrids.filter(
+      : sections.filter(
           (gridItem) =>
-            gridItem.categoryId === tabs[selected].category &&
+            gridItem.categoryId === parseInt(tabs[selected].category) &&
             gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
-  console.log("Filtered Image Grids:", filteredImageGrids); // Debug filtered data
+  // console.log("Filtered Image Grids:", filteredImageGrids); // Debug filtered data
 
   // Implement pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -295,11 +291,13 @@ export default function MySections() {
                       </div>
                     )}
                   </div>
-                  <Box background="bg-surface-secondary" padding="100">
-                    <Text variant="headingSm" as="h6">
-                      {gridItem.title}
-                    </Text>
-                    <Button fullWidth>Try Section</Button>
+                  <Box padding="100">
+                    <InlineGrid gap="200">
+                      <Text variant="headingSm" as="h6">
+                        {gridItem.title}
+                      </Text>
+                      <Button fullWidth>Try Section</Button>
+                    </InlineGrid>
                   </Box>
                 </BlockStack>
               </Card>

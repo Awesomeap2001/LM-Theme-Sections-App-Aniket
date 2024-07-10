@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "lm_faq_6gd8pr": {
+      "type": "LM_Faq",
+      "blocks": {
+        "question_mQWrGt": {
+          "type": "question",
+          "settings": {
+            "question": "How does the FAQ section work?",
+            "answer": "<p>Its simple really. You just add the questions as blocks and then you edit the question and answer.<\/p>"
+          }
+        },
+        "question_6wAa94": {
+          "type": "question",
+          "settings": {
+            "question": "How does the FAQ section work?",
+            "answer": "<p>Its simple really. You just add the questions as blocks and then you edit the question and answer.<\/p>"
+          }
+        },
+        "question_EaiLdR": {
+          "type": "question",
+          "settings": {
+            "question": "How does the FAQ section work?",
+            "answer": "<p>Its simple really. You just add the questions as blocks and then you edit the question and answer.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_mQWrGt",
+        "question_6wAa94",
+        "question_EaiLdR"
+      ],
+      "settings": {
+        "check_image": false,
+        "image": "shopify:\/\/shop_images\/image_6.png",
+        "image_position": "left",
+        "heading": "Frequently asked questions",
+        "heading_size": 25,
+        "mob_title_size": 25,
+        "headingAlign": "left",
+        "headline_font": "sans-serif",
+        "headline_size": 18,
+        "mob_headline_size": 16,
+        "headline_line_height": "1.15",
+        "text_font": "sans-serif",
+        "text_size": 14,
+        "text_line_height": "1.25",
+        "background_color": "linear-gradient(207deg, rgba(171, 103, 233, 1), rgba(105, 101, 231, 1) 100%)",
+        "o_background_color": "linear-gradient(164deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1) 100%)",
+        "question_color": "#111111",
+        "answer_color": "#555555",
+        "icon_color": "#df5c34",
+        "max_width": 1000,
+        "padding_top": 50,
+        "padding_bottom": 50,
+        "padding_left": 10,
+        "padding_right": 10,
+        "element_lmacing": 15
+      }
+    }
+  },
+  "order": [
+    "main",
+    "lm_faq_6gd8pr"
+  ]
+}

@@ -1,4 +1,4 @@
-import db from "../../db.server";
+import db from "../db.server";
 
 // GET SECTION INSPIRATION DATA FROM DATABASE
 export async function getDetails(shop) {

@@ -19,7 +19,7 @@
     transition: transform 0.3s ease;
     cursor: pointer;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f7f7f7; /* Add background color to dummy cards */
+    background-color: #f7f7f7;  /* Add background color to dummy cards */
     border-radius: 12px; /* Match card's border radius */
   }
   

@@ -1,0 +1,43 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "lm_heading_6tKdDc": {
+      "type": "LM_Heading",
+      "settings": {
+        "bg_color": "#000000",
+        "padding_top": 50,
+        "padding_bottom": 50,
+        "m_bottom": 20,
+        "container_width": 1200,
+        "heading": "Heading text",
+        "color_border": "#ffffff",
+        "border_h": "2",
+        "border_w": "60",
+        "font": "open_sans_n4",
+        "color": "#ffffff",
+        "desktopFontSize": 30,
+        "tabletFontSize": 20,
+        "mobileFontSize": 20,
+        "desktopFontWeight": "bold",
+        "desktopTextTransfer": "uppercase",
+        "desktopTextAlign": "center",
+        "class": "",
+        "richtext_block": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+        "maxwidth": 800,
+        "fontsize_D": 16,
+        "desc_color": "#ffffff",
+        "css": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "lm_heading_6tKdDc"
+  ]
+}

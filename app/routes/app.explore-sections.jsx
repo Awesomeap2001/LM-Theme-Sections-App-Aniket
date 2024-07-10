@@ -5,7 +5,6 @@ import {
   Page,
   Text,
   BlockStack,
-  LegacyCard,
   Tabs,
   Grid,
   InlineStack,
@@ -17,7 +16,7 @@ import {
   Bleed,
   InlineGrid,
   Badge,
-  Autocomplete,
+  Tooltip,
 } from "@shopify/polaris";
 import { useCallback, useState } from "react";
 import {
@@ -28,8 +27,24 @@ import {
   BillIcon,
 } from "@shopify/polaris-icons";
 import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
+import db from "../db.server";
+import { json, useLoaderData } from "@remix-run/react";
+
+export const loader = async () => {
+  try {
+    const sections = await db.section.findMany();
+    if (sections.length === 0) {
+      throw new Response("No sections found", { status: 404 });
+    }
+    return json(sections);
+  } catch (error) {
+    console.error("Error fetching sections:", error);
+    throw new Error("Failed to fetch sections data");
+  }
+};
 
 export default function ExploreSections() {
+  const sections = useLoaderData();
   const [selected, setSelected] = useState(0);
   const [active, setActive] = useState(false);
   const [modalContent, setModalContent] = useState({
@@ -37,6 +52,7 @@ export default function ExploreSections() {
     imgSrc: "",
     price: "",
     details: [],
+    tags: [],
   });
 
   // Handle event for showing Template Details Modal
@@ -54,21 +70,19 @@ export default function ExploreSections() {
   // Handle event for setting modal content and showing the modal
   const handleViewButtonClick = useCallback(
     (gridItem) => {
+      console.log(gridItem);
       setModalContent(gridItem);
       handleShowTemplateModal();
     },
     [handleShowTemplateModal],
   );
 
-  // Flatten the imageGrids array
-  const flattenedImageGrids = imageGrids.flat();
-
   // Filtered grids based on selected tab
-  const filteredImageGrids =
+  const filteredSections =
     selected === 0
-      ? flattenedImageGrids // Show all for "All" tab
-      : flattenedImageGrids.filter(
-          (gridItem) => gridItem.categoryId === tabs[selected].category,
+      ? sections // Show all for "All" tab
+      : sections.filter(
+          (item) => item.categoryId === parseInt(tabs[selected].category),
         );
 
   return (
@@ -91,50 +105,56 @@ export default function ExploreSections() {
         <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
           {/* Shows Various List Templates */}
 
-          <LegacyCard.Section title={tabs[selected].content}>
+          <Page fullWidth title={tabs[selected].content}>
             <Grid>
-              {filteredImageGrids.map((gridItem, index) => (
+              {filteredSections.map((gridItem, index) => (
                 <Grid.Cell
                   key={index}
                   columnSpan={{ xs: 3, sm: 3, md: 3, lg: 3, xl: 3 }}
                 >
                   <Card>
-                    <InlineStack gap="200" wrap={false}>
-                      <Text variant="headingMd" as="h5">
-                        {gridItem.title}
-                      </Text>
-                      {gridItem.badgeTone && gridItem.badgeProgress && (
-                        <Badge
-                          tone={gridItem.badgeTone}
-                          progress={gridItem.badgeProgress}
-                        >
-                          {gridItem.badgeTone === "success" ? "Unlock" : "Lock"}
-                        </Badge>
-                      )}
-                    </InlineStack>
+                    <InlineGrid gap={200}>
+                      <InlineStack gap="200" wrap={false}>
+                        <Text variant="headingMd" as="h5">
+                          {gridItem.title}
+                        </Text>
+                        {gridItem.badgeTone && gridItem.badgeProgress && (
+                          <Badge
+                            tone={gridItem.badgeTone}
+                            progress={gridItem.badgeProgress}
+                          >
+                            {gridItem.badgeTone === "success"
+                              ? "Unlock"
+                              : "Lock"}
+                          </Badge>
+                        )}
+                      </InlineStack>
 
-                    <Image
-                      alt=""
-                      width="100%"
-                      height="100%"
-                      style={{
-                        objectFit: "cover",
-                        objectPosition: "center",
-                      }}
-                      source={gridItem.imgSrc}
-                    />
-                    <InlineStack wrap={false} gap="100">
-                      <Button fullWidth>Install</Button>
-                      <Button
-                        icon={ViewIcon}
-                        onClick={() => handleViewButtonClick(gridItem)}
+                      <Image
+                        alt=""
+                        width="100%"
+                        height="100%"
+                        style={{
+                          objectFit: "cover",
+                          objectPosition: "center",
+                        }}
+                        source={gridItem.imgSrc}
                       />
-                    </InlineStack>
+                      <InlineStack wrap={false} gap="100">
+                        <Button fullWidth>Install</Button>
+                        <Tooltip content="More Details">
+                          <Button
+                            icon={ViewIcon}
+                            onClick={() => handleViewButtonClick(gridItem)}
+                          />
+                        </Tooltip>
+                      </InlineStack>
+                    </InlineGrid>
                   </Card>
                 </Grid.Cell>
               ))}
             </Grid>
-          </LegacyCard.Section>
+          </Page>
         </Tabs>
       </BlockStack>
 
@@ -166,16 +186,23 @@ export default function ExploreSections() {
                   </Bleed>
 
                   {/* Show Sections Details */}
-                  {modalContent.details?.map((detail, index) => (
-                    <InlineStack key={index} gap="100">
-                      <Text variant="headingMd" as="h5">
-                        {detail.title}
-                      </Text>
-                      <Text variant="bodyMd" as="p">
-                        {detail.description}
-                      </Text>
-                    </InlineStack>
-                  ))}
+                  <Box padding="400">
+                    <InlineGrid gap="300">
+                      {modalContent.details.length > 0 &&
+                        JSON.parse(modalContent.details)?.map(
+                          (detail, index) => (
+                            <InlineStack key={index} gap="100">
+                              <Text variant="bodyMd" as="p">
+                                <Text variant="headingMd" as="span">
+                                  {detail.title}:{" "}
+                                </Text>
+                                {detail.description}
+                              </Text>
+                            </InlineStack>
+                          ),
+                        )}
+                    </InlineGrid>
+                  </Box>
                 </Card>
               </Layout.Section>
 
@@ -183,31 +210,34 @@ export default function ExploreSections() {
               <Layout.Section variant="oneThird">
                 <BlockStack gap="400">
                   <Card>
-                    <BlockStack gap="300">
+                    <Box paddingBlockEnd="200">
                       <InlineGrid columns="1fr auto">
                         <Text variant="headingMd" as="h5">
                           {modalContent.title}
                         </Text>
                         <Text variant="headingMd" as="h5">
-                          {modalContent.price}
+                          ${modalContent.price}
                         </Text>
                       </InlineGrid>
-                    </BlockStack>
+                    </Box>
                     <BlockStack gap="300" inlineAlign="start">
-                      <InlineGrid columns="1fr auto" gap="200">
-                        <Tag>Wholesale</Tag>
-                        <Tag>Testimonial</Tag>
-                      </InlineGrid>
-                      <Text variant="bodyMd" as="p">
-                        Add tags to your order.
-                      </Text>
+                      <InlineStack gap="200">
+                        {modalContent.tags.length > 0 &&
+                          JSON.parse(modalContent.tags)?.map((tag, index) => (
+                            <Tag key={index}>{tag}</Tag>
+                          ))}
+                      </InlineStack>
+
                       <Button fullWidth variant="primary" icon={ProductIcon}>
-                        Buy A Section
+                        Buy this Section
                       </Button>
                     </BlockStack>
-                    <Box paddingBlock="100">
-                      <InlineStack gap="0" blockAlign="center">
-                        <Icon source={LockIcon} tone="base" />
+
+                    <Box paddingBlockStart="200">
+                      <InlineStack gap="050" blockAlign="center" align="center">
+                        <Box as="span">
+                          <Icon source={LockIcon} tone="base" />
+                        </Box>
                         <Text variant="bodyMd" as="p">
                           Secure payment through Shopify
                         </Text>
@@ -245,12 +275,14 @@ export default function ExploreSections() {
                       </Button>
                     </BlockStack>
                   </Card>
+
                   {/* Try Section */}
                   <Card>
                     <BlockStack inlineAlign="start">
                       <Button fullWidth>Try Section</Button>
                     </BlockStack>
                   </Card>
+
                   {/* Section Information Video */}
                   <Card>
                     <BlockStack inlineAlign="center">

@@ -12,19 +12,19 @@ export const tabs = [
     id: "01",
     content: "Accepts marketing",
     panelID: "accepts-marketing-content",
-    category: "01",
+    category: "1",
   },
   {
     id: "02",
     content: "Repeat sections",
     panelID: "repeat-sections-content",
-    category: "02",
+    category: "2",
   },
   {
     id: "03",
     content: "Prospects",
     panelID: "prospects-sections-content",
-    category: "03",
+    category: "3",
   },
 ];
 
