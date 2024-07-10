@@ -7,10 +7,8 @@ import {
   Image,
   InlineStack,
   Icon,
-  InlineGrid,
 } from "@shopify/polaris";
 import { json, useLoaderData, useNavigate } from "@remix-run/react";
-// import { bundles } from "./data/bundles-data";
 import styles from "./css/bundles.module.css"; // Import custom CSS module
 import db from "../db.server";
 
@@ -73,13 +71,13 @@ export default function Bundles() {
                     }}
                   >
                     {stackIndex === 0 ? (
-                      <Card roundedAbove="xl">
+                      <Box padding="400">
                         <Image
                           width="100%"
                           height="auto"
                           alt="bundleImage"
                           source={bundle.imgSrc}
-                          onClick={() => handleManageClick(bundle.id)}
+                          onClick={() => handleManageClick(bundle.bundleId)}
                         />
                         <Box padding="4">
                           <InlineStack align="space-between">
@@ -91,7 +89,7 @@ export default function Bundles() {
                             </Text>
                           </InlineStack>
                         </Box>
-                      </Card>
+                      </Box>
                     ) : (
                       <Box
                         width="100%"

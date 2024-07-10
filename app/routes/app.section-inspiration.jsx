@@ -23,7 +23,7 @@ export async function loader({ request }) {
   return json(data);
 }
 
-export default function AdditionalPage() {
+export default function SectionInspiration() {
   const gridItems = useLoaderData();
 
   return (
@@ -55,7 +55,6 @@ export default function AdditionalPage() {
           <Text variant="headingLg" as="h5">
             Section Inspiration
           </Text>
-
         </InlineStack>
       </Box>
 

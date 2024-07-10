@@ -1,13 +1,12 @@
 import { json } from "@remix-run/node";
 
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useParams } from "@remix-run/react";
 import {
   Bleed,
   BlockStack,
   Box,
   Button,
   Card,
-  Grid,
   Icon,
   Image,
   InlineGrid,
@@ -24,11 +23,10 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import { imageGrids } from "./data/explore-sections-data";
 import db from "../db.server";
 
 export const loader = async ({ params }) => {
-  const sectionId = parseInt(params.id);
+  const sectionId = parseInt(params.sectionId);
 
   console.log(`Loading section with ID: ${sectionId}`); // Debug log
 
@@ -51,11 +49,12 @@ export const loader = async ({ params }) => {
 };
 
 function sectionsDetails() {
+  const { id } = useParams();
   let { title, image, price, details, tags } = useLoaderData();
 
   return (
     <Page
-      backAction={{ content: "Section", url: "/app/my-sections" }}
+      backAction={{ content: "Section", url: `/app/bundleDetail/${id}` }}
       title={title}
     >
       <Layout>
@@ -76,10 +75,10 @@ function sectionsDetails() {
               <InlineGrid gap="300">
                 {details?.map((detail, index) => (
                   <InlineStack key={index} gap="100">
-                    <Text variant="headingMd" as="h5">
-                      {detail.title}:
-                    </Text>
                     <Text variant="bodyMd" as="p">
+                      <Text variant="headingMd" as="span">
+                        {detail.title}:{" "}
+                      </Text>
                       {detail.description}
                     </Text>
                   </InlineStack>
@@ -157,6 +156,13 @@ function sectionsDetails() {
                 <Button icon={ViewIcon} fullWidth>
                   View Demo Store
                 </Button>
+              </BlockStack>
+            </Card>
+
+            {/* Try Section */}
+            <Card>
+              <BlockStack inlineAlign="start">
+                <Button fullWidth>Try Section</Button>
               </BlockStack>
             </Card>
 

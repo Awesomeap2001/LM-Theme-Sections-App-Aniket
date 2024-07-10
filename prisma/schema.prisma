@@ -53,7 +53,7 @@ model bundle {
   title     String?
   price     Int?
   imgSrc    String?
-  tags      String?
+  tags      String?   @db.LongText
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   section   section[]
@@ -67,9 +67,15 @@ model section {
   price         Int?
   categoryId    Int?
   imgSrc        String?
-  details       String? //Details is an array so stored in JSON
+  details       String?   @db.LongText
+  tags          String?   @db.LongText
   bundleId      Int?
   bundle        bundle?   @relation(fields: [bundleId], references: [bundleId])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
+}
+
+model category {
+  categoryId   Int    @id @default(autoincrement())
+  categoryName String
 }
