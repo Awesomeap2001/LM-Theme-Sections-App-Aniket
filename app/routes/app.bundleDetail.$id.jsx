@@ -1,6 +1,5 @@
 import { json } from "@remix-run/node";
-import { bundles } from "./data/bundles-data";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import {
   Bleed,
   BlockStack,
@@ -24,35 +23,51 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import { imageGrids } from "./data/explore-sections-data";
+import db from "../db.server";
+import { useState } from "react";
+import "./css/my-sections-styles.css";
 
 export const loader = async ({ params }) => {
-  const bundleId = params.id;
+  const bundleId = parseInt(params.id);
 
-  console.log(`Loading bundle with ID: ${bundleId}`); // Debug log
+  // console.log(`Loading bundle with ID: ${bundleId}`); // Debug log
 
-  const bundle = bundles.find((bundle) => bundle.id === bundleId);
+  const bundle = await db.bundle.findFirst({ where: { bundleId } });
 
   if (!bundle) {
     console.error(`Bundle with ID: ${bundleId} not found`); // Error log
     throw new Response("Not Found", { status: 404 });
   }
 
-  // Filter imageGrids to include only sections with the matching bundleId
-  const filteredImageGrids = imageGrids
-    .map((grid) => grid.filter((item) => item.bundleId === bundleId))
-    .filter((grid) => grid.length > 0); // Remove empty grids
+  const bundleSections = await db.section.findMany({ where: { bundleId } });
 
   return json({
     title: bundle.title,
     image: bundle.imgSrc,
     price: bundle.price,
-    imageGrids: filteredImageGrids, // Include filtered imageGrids data here
+    tags: bundle.tags,
+    bundleSections,
   });
 };
 
+const rightArrow = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <path d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h82.7L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3V192c0 17.7 14.3 32 32 32s32-14.3 32-32V32c0-17.7-14.3-32-32-32H320zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z" />
+    </svg>
+  );
+};
+
 function BundlesDetails() {
-  let { title, image, price, imageGrids } = useLoaderData();
+  let { title, image, price, tags, bundleSections } = useLoaderData();
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleRedirectDetailPage = (sectionId) => {
+    // Use navigate function to change the route programmatically
+    navigate(`/app/bundleDetail/${id}/section/${sectionId}`);
+  };
 
   return (
     <Page backAction={{ content: "Bundle", url: "/app/bundles" }} title={title}>
@@ -69,31 +84,60 @@ function BundlesDetails() {
               />
             </Bleed>
             <Box padding="400">
-              {imageGrids.map((grid, gridIndex) => (
-                <Grid key={gridIndex}>
-                  {grid.map((item, index) => (
-                    <Grid.Cell
-                      key={index}
-                      columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}
-                    >
-                      <Card>
-                        <Image
-                          width="100%"
-                          height="100%"
-                          source={item.imgSrc}
-                          alt={item.title}
-                        />
-                        <Text as="p" variant="bodyMd" alignment="center">
-                          {item.title}
-                        </Text>
-                        <Text as="p" variant="bodyMd" alignment="center">
-                          {item.price}
-                        </Text>
-                      </Card>
-                    </Grid.Cell>
-                  ))}
-                </Grid>
-              ))}
+              <Grid>
+                {bundleSections.map((item, index) => (
+                  <Grid.Cell
+                    key={index}
+                    columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6, xl: 6 }}
+                  >
+                    <Card>
+                      <InlineGrid gap="200">
+                        <div
+                          className="image-container"
+                          onMouseEnter={() => setHoveredIndex(index)}
+                          onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                          <Image
+                            alt={item.title}
+                            source={item.imgSrc}
+                            fit="cover"
+                            className="grid-image"
+                          />
+                          {hoveredIndex === index && (
+                            <div
+                              className="overlay"
+                              onClick={() =>
+                                handleRedirectDetailPage(item.sectionId)
+                              }
+                            >
+                              <Card padding="200">
+                                <Icon source={rightArrow} tone="textPrimary" />
+                              </Card>
+                            </div>
+                          )}
+                        </div>
+                        <InlineStack
+                          gap="100"
+                          align="space-between"
+                          blockAlign="center"
+                        >
+                          <Text as="p" variant="bodyMd" alignment="center">
+                            {item.title}
+                          </Text>
+                          <Text
+                            as="p"
+                            variant="bodyMd"
+                            alignment="center"
+                            fontWeight="bold"
+                          >
+                            ${item.price}
+                          </Text>
+                        </InlineStack>
+                      </InlineGrid>
+                    </Card>
+                  </Grid.Cell>
+                ))}
+              </Grid>
             </Box>
           </Card>
         </Layout.Section>
@@ -102,37 +146,41 @@ function BundlesDetails() {
         <Layout.Section variant="oneThird">
           <BlockStack gap="400">
             <Card>
-              <BlockStack gap="300">
+              <Box paddingBlockEnd="200">
                 <InlineGrid columns="1fr auto">
                   <Text variant="headingMd" as="h5">
                     {title}
                   </Text>
                   <Text variant="headingMd" as="h5">
-                    {price}
+                    ${price}
                   </Text>
                 </InlineGrid>
-              </BlockStack>
+              </Box>
+
               <BlockStack gap="300" inlineAlign="start">
-                <InlineGrid columns="1fr auto" gap="200">
-                  <Tag>Wholesale</Tag>
-                  <Tag>Testimonial</Tag>
-                </InlineGrid>
-                <Text variant="bodyMd" as="p">
-                  Add tags to your order.
-                </Text>
+                <InlineStack gap="200">
+                  {JSON.parse(tags).map((tag, index) => (
+                    <Tag key={index}>{tag}</Tag>
+                  ))}
+                </InlineStack>
+
                 <Button fullWidth variant="primary" icon={ProductIcon}>
-                  Buy A Section
+                  Buy this Bundle
                 </Button>
               </BlockStack>
-              <Box paddingBlock="100">
-                <InlineStack gap="0" blockAlign="center">
-                  <Icon source={LockIcon} tone="base" />
-                  <Text variant="bodyMd" as="p">
+
+              <Box paddingBlockStart="200">
+                <InlineStack gap="050" blockAlign="center" align="center">
+                  <Box as="span">
+                    <Icon source={LockIcon} tone="base" />
+                  </Box>
+                  <Text variant="bodySm" as="p">
                     Secure payment through Shopify
                   </Text>
                 </InlineStack>
               </Box>
             </Card>
+
             <Card>
               <BlockStack inlineAlign="start">
                 <InlineStack gap="100">
@@ -150,7 +198,7 @@ function BundlesDetails() {
                 <InlineStack gap="100">
                   <Icon source={PlusIcon} tone="base" />
                   <Text variant="bodyMd" as="p">
-                    Add section to any theme
+                    Add sections to any theme
                   </Text>
                 </InlineStack>
               </BlockStack>
@@ -164,12 +212,7 @@ function BundlesDetails() {
                 </Button>
               </BlockStack>
             </Card>
-            {/* Try Section */}
-            <Card>
-              <BlockStack inlineAlign="start">
-                <Button fullWidth>Try Section</Button>
-              </BlockStack>
-            </Card>
+
             {/* Section Information Video */}
             <Card>
               <BlockStack inlineAlign="center">
