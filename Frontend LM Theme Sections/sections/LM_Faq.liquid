@@ -44,7 +44,7 @@
     padding: {{ section.settings.padding_top }}px {{ section.settings.padding_right }}px {{ section.settings.padding_bottom }}px {{ section.settings.padding_left }}px;
     }
 
-    .lm-faq .lm-faq-grid {
+    #lm-faq-{{ section.id }} .lm-faq .lm-faq-grid {
     position: relative;
     margin: 0 auto;
     display: block;
@@ -55,7 +55,7 @@
     align-items: center;
     }
 
-    .lm-faq-group {
+    #lm-faq-{{ section.id }} .lm-faq-group {
     position: relative;
     margin: 0;
     padding: 20px 0;
@@ -63,11 +63,11 @@
     border-bottom: 1px solid #ddd;
     }
 
-    .lm-faq-group * {
+    #lm-faq-{{ section.id }} .lm-faq-group * {
     pointer-events: none;
     }
 
-    .lm-faq-group a {
+    #lm-faq-{{ section.id }} .lm-faq-group a {
     pointer-events: auto !important;
     }
 
@@ -76,7 +76,7 @@
     margin: 0;
     padding: 0;s
     }
-    .lm-faq-group:hover h3.question{
+    #lm-faq-{{ section.id }} .lm-faq-group:hover h3.question{
       color: {{ section.settings.icon_color }} !important;
     }
     #lm-faq-{{ section.id }} .lm-faq-group .answer {
@@ -91,7 +91,7 @@
     animation: animateFAQ 250ms ease-in-out both;
     }
 
-    .lm-faq-group::before {
+    #lm-faq-{{ section.id }} .lm-faq-group::before {
     content: '+';
     display:block;
     position: absolute;
@@ -102,7 +102,7 @@
     right: 0;
     }
 
-    .lm-faq-group[active]::before {
+    #lm-faq-{{ section.id }} .lm-faq-group[active]::before {
     content: '-';
     display: block;
     position: absolute;
@@ -112,62 +112,62 @@
     top: 32px;
     color: {{ section.settings.icon_color }};
     }
-    .lm-faq-col{
+    #lm-faq-{{ section.id }} .lm-faq-col{
     width: 50%;
     padding: 20px;
   }
-  .lm-faq-image{
+  #lm-faq-{{ section.id }} .lm-faq-image{
     width: 50%;
     padding: 20px;
   }
   {%- if section.settings.check_image -%}
-    .lm-faq-image{
+    #lm-faq-{{ section.id }} .lm-faq-image{
     display: none;}
-    .lm-faq-col{
+    #lm-faq-{{ section.id }} .lm-faq-col{
       width: 100%;
       padding: 20px;
     }
 
   {%- endif -%}
 
-    .lm-faq-image img{
+  #lm-faq-{{ section.id }} .lm-faq-image img{
     width: 100%;
   }
 
-    .lm-faq-col .lm-faq-group:last-child{
+  #lm-faq-{{ section.id }} .lm-faq-col .lm-faq-group:last-child{
     border-bottom : none;
     }
-    .lm_faq_heading{
+    #lm-faq-{{ section.id }} .lm_faq_heading{
     font-size: {{section.settings.heading_size}}px ;
     font-family: {{ section.settings.headline_font.family }}, {{ section.settings.headline_font.fallback_families }};
     font-weight: 600;
     text-align: {{ section.settings.headingAlign }};
     }
-   .lm-faq-col [data-active="true"]{
+    #lm-faq-{{ section.id }} .lm-faq-col [data-active="true"]{
     padding-bottom: 10px;
     }
-    .lm-faq-col [data-active="true"] .question{
+    #lm-faq-{{ section.id }} .lm-faq-col [data-active="true"] .question{
       color: {{ section.settings.icon_color }} !important;
     }
-    .lm-right{
+    #lm-faq-{{ section.id }} .lm-right{
       flex-direction: row-reverse;
     }
 
     @media only screen and (max-width: 800px) {
-    .lm_faq_heading{
+      #lm-faq-{{ section.id }} .lm_faq_heading{
     font-size: {{ section.settings.mob_title_size }}px !important;
     }
-    .lm-faq-group h3{
+    #lm-faq-{{ section.id }} .lm-faq-group h3{
     font-size: {{ section.settings.mob_headline_size }}px !important;
     }
-    .lm-faq-grid{
+    #lm-faq-{{ section.id }} .lm-faq-grid{
     flex-direction: column;
   }
-    .lm-faq-image{
+  #lm-faq-{{ section.id }} .lm-faq-image{
     width: 100%;
     padding: 10px;
   }
-    .lm-faq-col{
+  #lm-faq-{{ section.id }} .lm-faq-col{
     width: 100%;
     padding: 10px;
     }
@@ -181,7 +181,7 @@
     <div class="lm-faq-grid lm-{{ section.settings.image_position }}">
       {%- if section.settings.image != blank -%}
         <div class="lm-faq-image">
-          <img src="{{ section.settings.image  | img_url: 'large'}}" alt="" h>
+          <img src="{{ section.settings.image  | img_url: 'large'}}" alt="{{ section.settings.image }}" >
         </div>
       {%- endif -%}
       <div class="lm-faq-col" lm-column>
@@ -252,8 +252,7 @@
           "label": "Right"
         }
       ],
-      "default": "left"
-    },
+      "default": "left"    },
     {
       "type": "header",
       "content": "Main Heading"
@@ -508,9 +507,6 @@
     {
       "name": "👉 ĹМ Faq",
       "blocks": [
-        {
-          "type": "question"
-        },
         {
           "type": "question"
         },

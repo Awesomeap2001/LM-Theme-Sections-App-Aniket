@@ -1,15 +1,290 @@
+<style>
+  {{ section.settings.font | font_face }}
+  {%- if section.settings.font != blank -%}
+   .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li {
+    font-family: {{ section.settings.font.family }}, {{ section.settings.font.fallback_families }};
+  }
+  {% endif %}
+    .Lm-top_bar{
+      overflow: hidden;
+    }
+  .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li{
+    line-height: normal;
+    font-size: {{ section.settings.desktopFontSize }}px;
+    text-transform : {{ section.settings.desktopTextTransfer }};
+    color: {{ section.settings.color }};
+    display: inline-block;
+    padding-right: 114px;
+    position: relative;
+  }
+  .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li a{
+    color: {{ section.settings.color }};
+    text-decoration: none;
+  }
 
-<div>Testing</div>
+  .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message {
+      overflow: hidden;
+      padding:{{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom}}px;
+    margin: 0;
+  }
+
+  .Lm-announcement-bar-{{ section.id }} #lm-marq {
+      width: 100%;
+      border: inset;
+      overflow: hidden;
+      white-space: nowrap;
+      box-shadow: unset;
+      border: 0;
+      border-color: currentcolor;
+      vertical-align: middle;
+  }
+  .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__link{
+    display: block;
+    width: 100%;
+  }
+  @keyframes Lm_marque_LTR {
+      from {
+          transform: translateX(-50%);
+      }
+      to {
+          transform: translateX(0%);
+      }
+  }
+
+  @keyframes Lm_marque_RTL {
+      from {
+          transform: translateX(0%);
+      }
+      to {
+          transform: translateX(50%);
+      }
+  }
+
+  .Lm-announcement-bar-{{ section.id }} #orig {
+      display: inline-flex;
+      overflow: hidden;
+      transform: translate(0);
+  }
+
+
+
+  .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li::after {
+      content: '';
+      width: 3.5px;
+      height: 3.5px;
+      background-color:  {{ section.settings.color }};
+      opacity: 1;
+      border-radius: 50%;
+      position: absolute;
+      top: 40%;
+      left: -56px;
+  }
+
+  @media (max-width: 480px) {
+
+      .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li {
+          padding-right: 55px;
+      }
+
+      .Lm-announcement-bar-{{ section.id }} .Lm-announcement-bar__message li::after {
+          right: 25px;
+      }
+  }
+
+  .Lm-announcement-bar-{{ section.id }} #orig {
+      animation: Lm_marque_LTR var(--animation-duration, 10s) infinite normal linear 1s;
+  }
+
+  .Lm-announcement-bar-{{ section.id }} #orig.reverse {
+      animation: Lm_marque_RTL var(--animation-duration, 45s) infinite normal linear 2s;
+  }
+</style>
+{% comment %} end stylesheet {% endcomment %}
+
+{% comment %} Start Template {% endcomment %}
+<div
+  class="Lm-top_bar Lm-announcement-bar-{{ section.id }}"
+  aria-label="Announcement"
+  style="background: {{  section.settings.bg_color }}; --animation-duration: {{ section.settings.animation_duration}}s;"
+>
+  <div class="Lm-announcement-bar__link">
+    <div id="lm-marq">
+      <span id="orig">
+        <ul class="Lm-announcement-bar__message">
+          {%- for block in section.blocks -%}
+            <li>
+              <a href="{{ block.settings.link }}"> {{ block.settings.text }}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </span>
+    </div>
+  </div>
+</div>
+{% comment %} End Template {% endcomment %}
+
 {% schema %}
 {
   "name": "👉 ĹМ Announcement Bar",
   "tag": "section",
+  "max_blocks": 30,
+  "enabled_on": {
+    "groups": ["header"]
+  },
   "settings": [
-  
+    {
+      "type": "header",
+      "content": "Announcement Bar styles"
+    },
+    {
+      "type": "color_background",
+      "id": "bg_color",
+      "default": "linear-gradient(207deg, rgba(171, 103, 233, 1), rgba(105, 101, 231, 1) 100%)",
+      "label": "Background Color"
+    },
+    {
+      "type": "header",
+      "content": "Section Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 10,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding Top",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 10,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding Bottom",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "m_bottom",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Margin Bottom",
+      "default": 20
+    },
+
+    {
+      "type": "font_picker",
+      "id": "font",
+      "label": "Font",
+      "default": "open_sans_n4"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color",
+      "default": "#000"
+    },
+    {
+      "type": "range",
+      "id": "desktopFontSize",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Font Size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "desktopTextTransfer",
+      "label": "Text Transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "header",
+      "content": "Scrolling Styles"
+    },
+    
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "min": 10,
+      "max": 100,
+      "step": 2,
+      "unit": "s",
+      "label": "Animation Duration",
+      "default": 60
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Announcement",
+      "type": "announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "default": "Welcome to our store",
+          "label": "Text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
   ],
   "presets": [
     {
-      "name": "👉 ĹМ Announcement Bar"
+      "name": "👉 ĹМ Announcement Bar",
+      "blocks": [
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        },
+        {
+          "type": "announcement"
+        }
+      ]
     }
   ]
 }

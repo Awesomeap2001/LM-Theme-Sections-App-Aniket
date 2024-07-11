@@ -3,22 +3,37 @@
 
 <div id="Lm-testimonial-{{ section.id }}" class="lm-testimonial-section">
   <div>
-    <h1 class="lm-testimonial-heading-text">{{ section.settings.heading }}</h1>
+    <h2 class="lm-testimonial-heading-text">{{ section.settings.heading }}</h2>
   </div>
   <div class="lm-testimonial-container">
     <div class="lm-testimonial-wrapper swiper-wrapper">
       {% for block in section.blocks %}
         <div class="lm-testimonial-slide swiper-slide">
           <div class="lm-testimonial-box" style="background-color: {{ block.settings.box-bg-color }}">
-            <img src="{{ block.settings.image | image_url: width: 300 }}">
+            <div class="lm-testimonial-img-block">
+              {% if block.settings.image != blank %}
+                <img src="{{ block.settings.image | image_url: width: 300 }}">
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              {% endif %}
+            </div>
             <div class="lm-testimonial-text">
               <h2
                 class="lm-heading-inner"
-                style="color: {{ block.settings.headingcolor }}; font-size: {{ section.settings.slide-heading-font-size }}px"
+                style="color: {{ section.settings.headingcolor }}; font-size: {{ section.settings.slide-heading-font-size }}px"
               >
                 {{ block.settings['slide-text'] }}
               </h2>
-              <div style="font-size: {{ section.settings.desc-size }}px; font-family: {{ section.settings.desc-family.family }}, {{ section.settings.desc-family.fallback_families }}; color: {{ block.settings.desc-color }}">
+              <h6
+                class="lm-designation-text"
+                style="font-size: {{ section.settings.slide-designation }}px; font-family: {{ section.settings.slide-designation-font-family.family }}, {{ section.settings.slide-designation-font-family.fallback_families }}; color: {{ section.settings.designationcolor}}"
+              >
+                {{ block.settings['slide-designation'] }}
+              </h6>
+              <div
+                class="lm-desc-inner"
+                style="font-size: {{ section.settings.desc-size }}px; font-family: {{ section.settings.desc-family.family }}, {{ section.settings.desc-family.fallback_families }}; color: {{ section.settings.desc-color }}"
+              >
                 {{ block.settings.desc }}
               </div>
             </div>
@@ -26,50 +41,46 @@
         </div>
       {% endfor %}
     </div>
-
     <div class="lm-pagination"></div>
   </div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var desktopSlidesPerView = parseInt('{{ section.settings.desktop_slides_per_view }}', 10);
-    var mobileSlidesPerView = parseInt('{{ section.settings.mobile_slides_per_view }}', 10);
-    var slideAutoplayDelay = parseInt('{{ section.settings.slide_autoplay_delay }}', 10);
-
-    var autoplayEnabled = {% if section.settings.slide_autoplay_true_false %} false {% else %} true {% endif %};
-
-    var mySwiper = new Swiper('.lm-testimonial-container', {
-      direction: 'horizontal',
-      loop: true,
-      slidesPerView: desktopSlidesPerView,
-      pagination: {
-        el: '.lm-pagination',
-        clickable: true,
+  {% comment %} var desktopSlidesPerView = parseInt('{{ section.settings.desktop_slides_per_view }}', 10); {% endcomment %}
+  var mobileSlidesPerView = parseInt('{{ section.settings.mobile_slides_per_view }}', 10);
+  var slideAutoplayDelay = parseInt('{{ section.settings.slide_autoplay_delay }}', 10);
+  var autoplayEnabled = {% if section.settings.slide_autoplay_true_false %} true {% else %} false {% endif %};
+  var mySwiper = new Swiper('.lm-testimonial-container', {
+    direction: 'horizontal',
+    loop: true,
+    centeredSlides:false,
+    spaceBetween:30,
+    slidesPerView: {{ section.settings.desktop_slides_per_view }},
+    pagination: {
+      el: '.lm-pagination',
+      clickable: true,
+    },
+    autoplay: autoplayEnabled ? {
+      delay: slideAutoplayDelay,
+      disableOnInteraction: false,
+    } : false,
+    breakpoints: {
+      // when window width is <= 300px
+      300: {
+        slidesPerView: mobileSlidesPerView,
+        spaceBetween:10
       },
-      autoplay: autoplayEnabled ? {
-        delay: slideAutoplayDelay,
-        disableOnInteraction: true,
-      } : true,
-      breakpoints: {
-        // when window width is <= 300px
-        300: {
-          slidesPerView: mobileSlidesPerView,
-        },
-        // when window width is <= 768px
-        768: {
-          slidesPerView: 2,
-        },
-        // when window width is <= 1024px
-        1024: {
-          slidesPerView: 3,
-        },
-        // when window width is <= 1250px
-        1250: {
-          slidesPerView: desktopSlidesPerView,
-        },
+      // when window width is <= 779px
+      779: {
+        slidesPerView: {{ section.settings.miniDesktop_slides_per_view}},
+        spaceBetween:30
       },
-    });
+      // when window width is <= 1250px
+      1150: {
+        slidesPerView: {{ section.settings.desktop_slides_per_view }},
+        spaceBetween:30
+      },
+    },
   });
 </script>
 
@@ -77,23 +88,22 @@
   {{ section.settings.heading-font-family | font_face }}
   {{ section.settings.slide-heading-font-family | font_face }}
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
   #Lm-testimonial-{{ section.id }} .lm-testimonial-container {
     width: 100%;
     margin: 0 auto;
     padding: 30px 0 5px;
+    overflow:hidden;
   }
-
+  #Lm-testimonial-{{ section.id }} .lm-testimonial-img-block{
+    width: 30%;
+  }
   #Lm-testimonial-{{ section.id }} .lm-pagination {
     text-align: center;
     margin-top: 40px;
   }
-
+  #Lm-testimonial-{{ section.id }} .lm-designation-text{
+    margin:0;
+  }
   #Lm-testimonial-{{ section.id }} .lm-pagination .swiper-pagination-bullet {
     background-color: {{ section.settings.lm-pagination-color }};
   }
@@ -103,18 +113,29 @@
     border-radius: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: start;
     gap: 20px;
   }
 
   #Lm-testimonial-{{ section.id }} .lm-testimonial-heading-text {
+    margin:0;
     font-size: {{ section.settings.heading-font-size }}px;
     color: {{ section.settings.heading-font-color }};
     font-family: {{ section.settings.heading-font-family.family }}, {{ section.settings.heading-font-family.fallback_families }};
+    text-align: {{ section.settings.desktopTextAlign }};
   }
+   #Lm-testimonial-{{ section.id }} .lm-desc-inner p{
+    margin: 15px 0 0 0;
+    line-height: 22px;
+    min-height:110px;
+    {% comment %} text-align: {{ section.settings.desktopTextAlign }}; {% endcomment %}
+  }
+
 
   #Lm-testimonial-{{ section.id }} .lm-testimonial-text .lm-heading-inner {
     font-size: 25px;
+    margin:0;
+    text-align: {{ section.settings.desktopTextAlign }};
     font-family: {{ section.settings.slide-heading-font-family.family }}, {{ section.settings.slide-heading-font-family.fallback_families }};
   }
 
@@ -128,6 +149,8 @@
   #Lm-testimonial-{{ section.id }} .lm-testimonial-box img {
     width: 100px;
     height: 100px;
+    object-fit: cover;
+    border-radius: 100px;
   }
 
   #Lm-testimonial-{{ section.id }} .lm-testimonial-text {
@@ -143,8 +166,6 @@
 
   #Lm-testimonial-{{ section.id }}.lm-testimonial-section {
     display: flex;
-    justify-content: center;
-    align-items: center;
     width: auto;
     gap: 20px;
     padding: {{ section.settings.padding_top }}px 40px {{ section.settings.padding_bottom }}px;
@@ -154,19 +175,16 @@
     background-color: {{ section.settings.main-bg-color }};
   }
 
-  @media only screen and (min-width: 300px) {
-    #Lm-testimonial-{{ section.id }} .lm-testimonial-box {
-      width: 96% !important;
+  @media only screen and (max-width: 779px) {
+    #Lm-testimonial-{{ section.id }}.lm-testimonial-section {
+      padding: {{ section.settings.mobile-padding_top }}px 20px {{ section.settings.mobile-padding_bottom }}px;
     }
-  }
-
-  @media only screen and (max-width:767px) {
     #Lm-testimonial-{{ section.id }} .lm-testimonial-box {
       flex-direction: column;
     }
-  }
-
-  @media only screen and (max-width: 768px) {
+    #Lm-testimonial-{{ section.id }} .lm-testimonial-heading-text {
+      font-size: {{ section.settings.mobile-heading-font-size}}px;
+    }
     #Lm-testimonial-{{ section.id }} .lm-testimonial-container {
       width: 100%;
     }
@@ -209,27 +227,44 @@
     {
       "type": "color",
       "id": "main-bg-color",
-      "label": "Background Color"
+      "label": "Background Color",
+      "default": "#FCF8F5"
     },
     {
       "type": "range",
       "id": "padding_top",
-      "default": 25,
-      "label": "Padding Top",
+      "default": 40,
+      "label": "Padding Top Desktop",
       "min": 0,
       "max": 100
     },
     {
       "type": "range",
       "id": "padding_bottom",
+      "default": 40,
+      "label": "Padding Bottom Desktop",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "mobile-padding_top",
       "default": 25,
-      "label": "Padding Bottom",
+      "label": "Padding Top Mobile",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "mobile-padding_bottom",
+      "default": 25,
+      "label": "Padding Bottom Mobile",
       "min": 0,
       "max": 100
     },
     {
       "type": "header",
-      "content": "Main Heading"
+      "content": "Section Heading"
     },
     {
       "type": "text",
@@ -240,21 +275,50 @@
     {
       "type": "range",
       "id": "heading-font-size",
-      "label": "Font Size",
+      "label": "Font Size On Desktop",
       "max": 50,
       "min": 10,
-      "default": 20
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "mobile-heading-font-size",
+      "label": "Font Size On Mobile",
+      "max": 40,
+      "min": 10,
+      "default": 30
     },
     {
       "type": "font_picker",
       "id": "heading-font-family",
-      "label": "Font Family",
+      "label": "Heading Font Family",
       "default": "sans-serif"
     },
     {
       "type": "color",
       "id": "heading-font-color",
-      "label": "Color"
+      "label": "Color",
+      "default": "#000"
+    },
+    {
+      "type": "select",
+      "id": "desktopTextAlign",
+      "label": "Text Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
     },
     {
       "type": "header",
@@ -263,30 +327,62 @@
     {
       "type": "range",
       "id": "slide-heading-font-size",
-      "label": "Testimonial Heading Font Size",
+      "label": "Name Font Size",
       "max": 50,
       "min": 10,
-      "default": 20
+      "default": 24
     },
     {
       "type": "font_picker",
       "id": "slide-heading-font-family",
-      "label": "Testimonial Heading Font Family",
+      "label": "Name Font Family",
       "default": "sans-serif"
-    }, 
+    },
+    {
+      "type": "color",
+      "id": "headingcolor",
+      "label": "Name Color",
+      "default": "#000"
+    },
+    {
+      "type": "range",
+      "id": "slide-designation",
+      "label": "Designation Font Size",
+      "max": 25,
+      "min": 10,
+      "default": 14
+    },
+    {
+      "type": "font_picker",
+      "id": "slide-designation-font-family",
+      "label": "Designation Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "designationcolor",
+      "label": "Designation Color",
+      "default": "#8C8C8C"
+    },
     {
       "type": "range",
       "id": "desc-size",
-      "label": "Testimonial Description Font Size",
-      "max": 50,
+      "label": "Description Font Size",
+      "max": 30,
       "min": 10,
       "default": 15
     },
     {
       "type": "font_picker",
       "id": "desc-family",
-      "label": "Testimonial Description Font Family",
+      "label": "Description Font Family",
       "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "desc-color",
+      "label": "Color",
+      "default": "#000"
     },
     {
       "type": "header",
@@ -295,7 +391,8 @@
     {
       "type": "color",
       "id": "lm-pagination-color",
-      "label": "Color"
+      "label": "Color",
+      "default": "#000"
     },
     {
       "type": "header",
@@ -317,21 +414,25 @@
         {
           "value": "3",
           "label": "3 Slides"
-        },
-        {
-          "value": "4",
-          "label": "4 Slides"
-        },
-        {
-          "value": "5",
-          "label": "5 Slides"
-        },
-        {
-          "value": "6",
-          "label": "6 Slides"
         }
       ],
-      "default": "4"
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "miniDesktop_slides_per_view",
+      "label": "Mini Desktop (Resolution 780px to 1140px)",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Slide"
+        },
+        {
+          "value": "2",
+          "label": "2 Slides"
+        }
+      ],
+      "default": "1"
     },
     {
       "type": "select",
@@ -370,45 +471,34 @@
       "name": "Slide",
       "type": "slide",
       "settings": [
-       
         {
           "type": "color",
           "id": "box-bg-color",
-          "label": "Testimonial Background Color"
+          "label": "Background Color",
+          "default": "#fff"
         },
         {
           "type": "image_picker",
           "id": "image",
-          "label": "Testimonial Image"
-        },
-        {
-          "type": "header",
-          "content": "Testimonial Heading"
+          "label": "Image"
         },
         {
           "type": "text",
           "id": "slide-text",
-          "label": "Heading",
+          "label": "Name",
           "default": "Your heading"
         },
         {
-          "type": "color",
-          "id": "headingcolor",
-          "label": "Color"
-        },
-        {
-          "type": "header",
-          "content": "Testimonial Content"
+          "type": "text",
+          "id": "slide-designation",
+          "label": "Designation",
+          "default": "Your heading"
         },
         {
           "type": "richtext",
           "id": "desc",
-          "label": "Description"
-        },
-        {
-          "type": "color",
-          "id": "desc-color",
-          "label": "Color"
+          "label": "Description",
+          "default": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>"
         }
       ]
     }
@@ -416,7 +506,20 @@
   "presets": [
     {
       "name": "👉 ĹМ Testimonial Slider",
-      "category": "custom"
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
     }
   ]
 }

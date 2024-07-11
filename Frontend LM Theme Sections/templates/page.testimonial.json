@@ -1,0 +1,89 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "lm_testimonial_slider_FDUzLt": {
+      "type": "LM_Testimonial_Slider",
+      "blocks": {
+        "slide_jRKiqp": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fcf8f5",
+            "image": "shopify:\/\/shop_images\/37a17c010545d2a58430cd8f5eb2c5dc_f0842486-cd20-4e35-9fdd-82fb3b80d214.png",
+            "slide-text": "Your heading",
+            "headingcolor": "",
+            "desc": "<p><strong>Lorem Ipsum<\/strong>is simply dummy text of the printing and typesetting industry.<\/p>",
+            "desc-color": ""
+          }
+        },
+        "slide_fAtUUz": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fcf8f5",
+            "image": "shopify:\/\/shop_images\/37a17c010545d2a58430cd8f5eb2c5dc_f0842486-cd20-4e35-9fdd-82fb3b80d214.png",
+            "slide-text": "Your heading",
+            "headingcolor": "",
+            "desc": "<p><strong>Lorem Ipsum<\/strong>is simply dummy text of the printing and typesetting industry.<\/p>",
+            "desc-color": ""
+          }
+        },
+        "slide_BEVxqV": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fcf8f5",
+            "image": "shopify:\/\/shop_images\/37a17c010545d2a58430cd8f5eb2c5dc_f0842486-cd20-4e35-9fdd-82fb3b80d214.png",
+            "slide-text": "Your heading",
+            "headingcolor": "",
+            "desc": "<p><strong>Lorem Ipsum<\/strong>is simply dummy text of the printing and typesetting industry.<\/p>",
+            "desc-color": ""
+          }
+        },
+        "slide_7jfaH4": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fcf8f5",
+            "image": "shopify:\/\/shop_images\/37a17c010545d2a58430cd8f5eb2c5dc_f0842486-cd20-4e35-9fdd-82fb3b80d214.png",
+            "slide-text": "Your heading",
+            "headingcolor": "",
+            "desc": "<p><strong>Lorem Ipsum<\/strong>is simply dummy text of the printing and typesetting industry.<\/p>",
+            "desc-color": ""
+          }
+        }
+      },
+      "block_order": [
+        "slide_jRKiqp",
+        "slide_fAtUUz",
+        "slide_BEVxqV",
+        "slide_7jfaH4"
+      ],
+      "settings": {
+        "main-bg-color": "#121212",
+        "padding_top": 40,
+        "padding_bottom": 40,
+        "heading": "Testimonial Slider",
+        "heading-font-size": 40,
+        "heading-font-family": "sans-serif",
+        "heading-font-color": "#ffffff",
+        "slide-heading-font-size": 20,
+        "slide-heading-font-family": "sans-serif",
+        "desc-size": 15,
+        "desc-family": "sans-serif",
+        "lm-pagination-color": "#ffffff",
+        "desktop_slides_per_view": "4",
+        "mobile_slides_per_view": "1",
+        "slide_autoplay_true_false": false,
+        "slide_autoplay_delay": 2500
+      }
+    }
+  },
+  "order": [
+    "main",
+    "lm_testimonial_slider_FDUzLt"
+  ]
+}
