@@ -29,14 +29,24 @@ import {
 import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
 import db from "../db.server";
 import { json, useLoaderData } from "@remix-run/react";
+import { authenticate } from "../shopify.server";
 
-export const loader = async () => {
+export const loader = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
   try {
     const sections = await db.section.findMany();
     if (sections.length === 0) {
       throw new Response("No sections found", { status: 404 });
     }
-    return json(sections);
+
+    const sectionsUpdated = sections.map((section) => {
+      section.store === session.shop
+        ? (section.free = true)
+        : (section.free = false);
+      return section;
+    });
+
+    return json(sectionsUpdated);
   } catch (error) {
     console.error("Error fetching sections:", error);
     throw new Error("Failed to fetch sections data");
@@ -53,6 +63,7 @@ export default function ExploreSections() {
     price: "",
     details: [],
     tags: [],
+    free: false,
   });
 
   // Handle event for showing Template Details Modal
@@ -115,20 +126,26 @@ export default function ExploreSections() {
                 >
                   <Card>
                     <InlineGrid gap={200}>
-                      <InlineStack gap="200" wrap={false}>
+                      <InlineStack gap="200" wrap={false} align="space-between">
                         <Text variant="headingMd" as="h5">
                           {gridItem.title}
                         </Text>
-                        {gridItem.badgeTone && gridItem.badgeProgress && (
-                          <Badge
-                            tone={gridItem.badgeTone}
-                            progress={gridItem.badgeProgress}
-                          >
-                            {gridItem.badgeTone === "success"
-                              ? "Unlock"
-                              : "Lock"}
-                          </Badge>
-                        )}
+                        <Badge
+                          tone={
+                            gridItem.price === 0 || gridItem.free
+                              ? "success"
+                              : "warning"
+                          }
+                          progress={
+                            gridItem.price === 0 || gridItem.free
+                              ? "complete"
+                              : "incomplete"
+                          }
+                        >
+                          {gridItem.price == 0 || gridItem.free
+                            ? "Free"
+                            : "Paid"}
+                        </Badge>
                       </InlineStack>
 
                       <Image
@@ -142,7 +159,11 @@ export default function ExploreSections() {
                         source={gridItem.imgSrc}
                       />
                       <InlineStack wrap={false} gap="100">
-                        <Button fullWidth>Install</Button>
+                        {gridItem.price === 0 || gridItem.free === true ? (
+                          <Button fullWidth>Install</Button>
+                        ) : (
+                          <Button fullWidth>Buy Section</Button>
+                        )}
                         <Tooltip content="More Details">
                           <Button
                             icon={ViewIcon}
@@ -217,7 +238,10 @@ export default function ExploreSections() {
                           {modalContent.title}
                         </Text>
                         <Text variant="headingMd" as="h5">
-                          ${modalContent.price}
+                          {modalContent.price === 0 ||
+                          modalContent.free === true
+                            ? "Free"
+                            : "$" + modalContent.price}
                         </Text>
                       </InlineGrid>
                     </Box>
@@ -229,9 +253,16 @@ export default function ExploreSections() {
                           ))}
                       </InlineStack>
 
-                      <Button fullWidth variant="primary" icon={ProductIcon}>
-                        Buy this Section
-                      </Button>
+                      {modalContent.price === 0 ||
+                      modalContent.free === true ? (
+                        <Button fullWidth variant="primary" icon={ProductIcon}>
+                          Install
+                        </Button>
+                      ) : (
+                        <Button fullWidth variant="primary" icon={ProductIcon}>
+                          Buy this Section
+                        </Button>
+                      )}
                     </BlockStack>
 
                     <Box paddingBlockStart="200">

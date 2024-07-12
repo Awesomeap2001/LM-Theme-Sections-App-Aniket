@@ -14,24 +14,61 @@ import {
   TextField,
   DropZone,
   Thumbnail,
+  InlineError,
+  Tag,
+  Badge,
+  Layout,
+  Bleed,
+  InlineGrid,
+  Icon,
+  Tooltip,
 } from "@shopify/polaris";
 import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
-import { authenticate } from "../shopify.server";
-import { json } from "@remix-run/node";
+import { appUrl, authenticate } from "../shopify.server";
+import {
+  json,
+  unstable_composeUploadHandlers,
+  unstable_createFileUploadHandler,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
+} from "@remix-run/node";
 import {
   getDetails,
   postInspirationForm,
 } from "../models/section_inspiration.server";
 import { useCallback, useEffect, useState } from "react";
 import { NoteIcon } from "@shopify/polaris-icons";
-import {} from "@shopify/app-bridge-react";
+import {
+  ViewIcon,
+  ProductIcon,
+  LockIcon,
+  PlusIcon,
+  BillIcon,
+} from "@shopify/polaris-icons";
+
+// Function to generate a random 12-character string
+function generateRandomString() {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 12;
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // it loads data before page elements load
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
   const data = await getDetails(session.shop);
-
-  return json(data);
+  const gridItems = data.map((section) => {
+    section.store === session.shop
+      ? (section.free = true)
+      : (section.free = false);
+    return section;
+  });
+  return json({ gridItems, appUrl });
 }
 
 // For Form Submission
@@ -39,36 +76,96 @@ export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const { shop } = session;
 
-  const formData = await request.formData();
+  // Parse form data and handle file upload in one step
+  const formData = await unstable_parseMultipartFormData(
+    request,
+    unstable_composeUploadHandlers(
+      unstable_createFileUploadHandler({
+        directory: "./public/uploads",
+        avoidFileConflicts: false,
+        file({ filename }) {
+          const extension = filename.split(".").pop();
+          return `${generateRandomString()}.${extension}`;
+        },
+        maxPartSize: 10 * 1024 * 1024, // 10 MB
+      }),
+      unstable_createMemoryUploadHandler(),
+    ),
+  );
+
+  // Extracting form fields
+  const name = formData.get("name");
+  const email = formData.get("email");
+  const description = formData.get("description");
+  const file = formData.get("file");
+
+  if (!name || !email || !description || !file) {
+    return json(
+      { success: false, message: "All fields are required." },
+      { status: 400 },
+    );
+  }
+
   const data = {
-    name: formData.get("name"),
-    email: formData.get("email"),
-    description: formData.get("description"),
-    image: formData.get("file"), // Fetching the file
+    name,
+    email,
+    description,
+    image: file.name, // Storing the file name
     shop,
   };
 
-  const result = await postInspirationForm({ ...data, image: data.image.name });
-  if (result) {
-    return json({ success: true, message: "Thank you for your suggestion." });
-  } else {
+  // console.log(file); // Logging the uploaded file information
+
+  try {
+    const result = await postInspirationForm(data);
+
     return json({
-      success: false,
-      message: "Failed to post inspiration form.",
+      success: true,
+      message: "Thank you for your suggestion.",
+      image: `/uploads/${file.name}`,
     });
+  } catch (error) {
+    console.log("Error in action function:", error);
+    return json(
+      { success: false, message: "Failed to post inspiration form." },
+      { status: 500 },
+    );
   }
 };
 
 export default function SectionInspiration() {
-  const gridItems = useLoaderData();
+  const { gridItems, appUrl } = useLoaderData();
   const [openModal, setOpenModal] = useState(false);
+  const [active, setActive] = useState(false);
+  const [modalContent, setModalContent] = useState({
+    title: "",
+    imgSrc: "",
+    price: "",
+    details: [],
+    tags: [],
+    free: null,
+  });
+
+  // Handle event for showing Template Details Modal
+  const handleShowTemplateModal = useCallback(
+    () => setActive((active) => !active),
+    [],
+  );
+  // Handle event for setting modal content and showing the modal
+  const handleViewButtonClick = useCallback(
+    (gridItem) => {
+      setModalContent(gridItem);
+      handleShowTemplateModal();
+    },
+    [handleShowTemplateModal],
+  );
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     description: "",
-    image: "",
   });
-  const [file, setFile] = useState();
+  const [file, setFile] = useState(null);
 
   const [error, setError] = useState({
     name: "",
@@ -76,9 +173,24 @@ export default function SectionInspiration() {
     description: "",
     image: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleOpenModal = () => {
-    setOpenModal(!openModal);
+  const handleModalClose = () => {
+    setOpenModal(false);
+    setFormData({
+      name: "",
+      email: "",
+      description: "",
+      image: "",
+    });
+    setFile(null);
+    setError({
+      name: "",
+      email: "",
+      description: "",
+      image: "",
+    });
+    setLoading(false);
   };
 
   const handleChange = (name, value) => {
@@ -104,15 +216,16 @@ export default function SectionInspiration() {
             : NoteIcon
         }
       />
-      <div>
+      <Box>
         {file.name}
         {/* <Text variant="bodySm" as="p">
           {file.size} bytes
         </Text> */}
-      </div>
+      </Box>
     </InlineStack>
   );
 
+  // Form Validation
   const validateForm = () => {
     let isValid = true;
     const newError = {
@@ -138,12 +251,17 @@ export default function SectionInspiration() {
       newError.description = "Description is required";
       isValid = false;
     }
+    if (!file) {
+      newError.image = "Image is required";
+      isValid = false;
+    }
+
     setError(newError);
     return isValid;
   };
 
   // Form Submisssion
-  const submit = useSubmit();
+  const submit = useSubmit(); // used to send data to Action component
   const handleSubmit = () => {
     if (validateForm()) {
       const formDataToSubmit = new FormData();
@@ -158,15 +276,18 @@ export default function SectionInspiration() {
         method: "POST",
         encType: "multipart/form-data",
       });
+
+      setLoading(true);
     }
   };
 
   // Response from Server
   const response = useActionData();
 
-  // Handle response from server
+  // Handle response from server after form submission
   useEffect(() => {
     if (response) {
+      setLoading(false);
       shopify.toast.show(response.message, {
         duration: 5000,
       });
@@ -178,6 +299,8 @@ export default function SectionInspiration() {
           description: "",
           image: "",
         });
+        setFile(null);
+        console.log(appUrl + response.image); //Image URL
       }
     }
   }, [response]); // Ensure only update on response change
@@ -193,10 +316,10 @@ export default function SectionInspiration() {
               version="1.1"
               id="Capa_1"
               xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
               width="22px"
               viewBox="0 0 31.816 31.816"
-              xml:space="preserve"
+              xmlSpace="preserve"
             >
               <g>
                 <g>
@@ -214,7 +337,7 @@ export default function SectionInspiration() {
             </Text>
           </InlineStack>
 
-          <Button variant="primary" onClick={handleOpenModal}>
+          <Button variant="primary" onClick={() => setOpenModal(true)}>
             Submit your Inspiration
           </Button>
         </InlineStack>
@@ -224,21 +347,52 @@ export default function SectionInspiration() {
       <BlockStack gap="300">
         <Grid columns={{ sm: 1, md: 2, lg: 3 }} gap="300">
           {gridItems.map((gridItem, index) => (
-            <Card key={index} sectioned>
-              <BlockStack gap="200">
-                <Image
-                  alt={gridItem.title}
-                  source={gridItem.imgSrc}
-                  fit="cover"
-                  className="grid-image"
-                  width="100%"
-                />
-                <Box padding="100">
-                  <Text variant="headingSm" as="h6">
+            <Card key={index}>
+              <InlineGrid gap={200}>
+                <InlineStack gap="200" wrap={false} align="space-between">
+                  <Text variant="headingMd" as="h5">
                     {gridItem.title}
                   </Text>
-                </Box>
-              </BlockStack>
+                  <Badge
+                    tone={
+                      gridItem.price == 0 || gridItem.free
+                        ? "success"
+                        : "warning"
+                    }
+                    progress={
+                      gridItem.price == 0 || gridItem.free
+                        ? "complete"
+                        : "incomplete"
+                    }
+                  >
+                    {gridItem.price == 0 || gridItem.free ? "Free" : "Paid"}
+                  </Badge>
+                </InlineStack>
+
+                <Image
+                  alt=""
+                  width="100%"
+                  height="100%"
+                  style={{
+                    objectFit: "cover",
+                    objectPosition: "center",
+                  }}
+                  source={gridItem.imgSrc}
+                />
+                <InlineStack wrap={false} gap="100">
+                  {gridItem.price === 0 || gridItem.free === true ? (
+                    <Button fullWidth>Install</Button>
+                  ) : (
+                    <Button fullWidth>Buy Section</Button>
+                  )}
+                  <Tooltip content="More Details">
+                    <Button
+                      icon={ViewIcon}
+                      onClick={() => handleViewButtonClick(gridItem)}
+                    />
+                  </Tooltip>
+                </InlineStack>
+              </InlineGrid>
             </Card>
           ))}
         </Grid>
@@ -247,12 +401,12 @@ export default function SectionInspiration() {
       {/* Modal For Form */}
       <Modal
         open={openModal}
-        onClose={handleOpenModal}
+        onClose={handleModalClose}
         title="Submit your Section Inspiration"
         secondaryActions={[
           {
             content: "Cancel",
-            onAction: handleOpenModal,
+            onAction: handleModalClose,
           },
         ]}
       >
@@ -306,9 +460,9 @@ export default function SectionInspiration() {
                     {fileUpload}
                   </DropZone>
 
-                  {/* <input type="hidden" name="shop" value={shop} /> */}
+                  <InlineError message={error.image} fieldID="file" />
 
-                  <Button fullWidth variant="primary" submit>
+                  <Button fullWidth variant="primary" submit loading={loading}>
                     Submit
                   </Button>
                 </FormLayout>
@@ -316,6 +470,157 @@ export default function SectionInspiration() {
             </FormLayout>
           </Form>
         </Page>
+      </Modal>
+
+      {/* Modal for Section Details */}
+      <Modal
+        size="large"
+        open={active}
+        onClose={handleShowTemplateModal}
+        title={modalContent.title}
+        primaryAction={{
+          content: "Close",
+          onAction: handleShowTemplateModal,
+        }}
+      >
+        <Modal.Section>
+          <Page fullWidth>
+            <Layout>
+              {/* Show Sections preview Image */}
+              <Layout.Section>
+                <Card>
+                  <Bleed>
+                    <Image
+                      width="100%"
+                      height="100%"
+                      source={modalContent.imgSrc}
+                      alt="Template preview"
+                    />
+                  </Bleed>
+
+                  {/* Show Sections Details */}
+                  <Box padding="400">
+                    <InlineGrid gap="300">
+                      {modalContent.details.length > 0 &&
+                        JSON.parse(modalContent.details)?.map(
+                          (detail, index) => (
+                            <InlineStack key={index} gap="100">
+                              <Text variant="bodyMd" as="p">
+                                <Text variant="headingMd" as="span">
+                                  {detail.title}:{" "}
+                                </Text>
+                                {detail.description}
+                              </Text>
+                            </InlineStack>
+                          ),
+                        )}
+                    </InlineGrid>
+                  </Box>
+                </Card>
+              </Layout.Section>
+
+              {/* Section Purchase Plans */}
+              <Layout.Section variant="oneThird">
+                <BlockStack gap="400">
+                  <Card>
+                    <Box paddingBlockEnd="200">
+                      <InlineGrid columns="1fr auto">
+                        <Text variant="headingMd" as="h5">
+                          {modalContent.title}
+                        </Text>
+                        <Text variant="headingMd" as="h5">
+                          {modalContent.price === 0 ||
+                          modalContent.free === true
+                            ? "Free"
+                            : "$" + modalContent.price}
+                        </Text>
+                      </InlineGrid>
+                    </Box>
+                    <BlockStack gap="300" inlineAlign="start">
+                      <InlineStack gap="200">
+                        {modalContent.tags.length > 0 &&
+                          JSON.parse(modalContent.tags)?.map((tag, index) => (
+                            <Tag key={index}>{tag}</Tag>
+                          ))}
+                      </InlineStack>
+
+                      {modalContent.price === 0 ||
+                      modalContent.free === true ? (
+                        <Button fullWidth variant="primary" icon={ProductIcon}>
+                          Install
+                        </Button>
+                      ) : (
+                        <Button fullWidth variant="primary" icon={ProductIcon}>
+                          Buy this Section
+                        </Button>
+                      )}
+                    </BlockStack>
+
+                    <Box paddingBlockStart="200">
+                      <InlineStack gap="050" blockAlign="center" align="center">
+                        <Box as="span">
+                          <Icon source={LockIcon} tone="base" />
+                        </Box>
+                        <Text variant="bodyMd" as="p">
+                          Secure payment through Shopify
+                        </Text>
+                      </InlineStack>
+                    </Box>
+                  </Card>
+                  <Card>
+                    <BlockStack inlineAlign="start">
+                      <InlineStack gap="100">
+                        <Icon source={ProductIcon} tone="base" />
+                        <Text variant="bodyMd" as="p">
+                          One-time charge
+                        </Text>
+                      </InlineStack>
+                      <InlineStack gap="100">
+                        <Icon source={BillIcon} tone="base" />
+                        <Text variant="bodyMd" as="p">
+                          Buy once, own forever
+                        </Text>
+                      </InlineStack>
+                      <InlineStack gap="100">
+                        <Icon source={PlusIcon} tone="base" />
+                        <Text variant="bodyMd" as="p">
+                          Add section to any theme
+                        </Text>
+                      </InlineStack>
+                    </BlockStack>
+                  </Card>
+
+                  {/* View Demo Store */}
+                  <Card>
+                    <BlockStack inlineAlign="start">
+                      <Button icon={ViewIcon} fullWidth>
+                        View Demo Store
+                      </Button>
+                    </BlockStack>
+                  </Card>
+
+                  {/* Try Section */}
+                  <Card>
+                    <BlockStack inlineAlign="start">
+                      <Button fullWidth>Try Section</Button>
+                    </BlockStack>
+                  </Card>
+
+                  {/* Section Information Video */}
+                  <Card>
+                    <BlockStack inlineAlign="center">
+                      <iframe
+                        src="https://www.youtube.com/embed/zmQjOJJj7MI"
+                        height="250"
+                        width="auto"
+                      ></iframe>
+                    </BlockStack>
+                  </Card>
+                </BlockStack>
+              </Layout.Section>
+            </Layout>
+          </Page>
+        </Modal.Section>
       </Modal>
     </Page>
   );

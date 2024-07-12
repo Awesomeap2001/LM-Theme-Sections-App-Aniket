@@ -3,11 +3,11 @@
 client_id = "3447dedcdd8ad33e0061a90a8048bb32"
 name = "LM Theme Sections"
 handle = "lm-theme-sections"
-application_url = "https://models-serious-intervals-pole.trycloudflare.com"
+application_url = "https://institute-planning-continually-rapidly.trycloudflare.com"
 embedded = true
 
 [build]
-automatically_update_urls_on_dev = true
+automatically_update_urls_on_dev = false
 dev_store_url = "silver-ponies-home-test.myshopify.com"
 include_config_on_deploy = true
 
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://models-serious-intervals-pole.trycloudflare.com/auth/callback",
-  "https://models-serious-intervals-pole.trycloudflare.com/auth/shopify/callback",
-  "https://models-serious-intervals-pole.trycloudflare.com/api/auth/callback"
+  "https://institute-planning-continually-rapidly.trycloudflare.com/auth/callback",
+  "https://institute-planning-continually-rapidly.trycloudflare.com/auth/shopify/callback",
+  "https://institute-planning-continually-rapidly.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

@@ -70,6 +70,8 @@ model section {
   details       String?   @db.LongText
   tags          String?   @db.LongText
   bundleId      Int?
+  store         String?
+  status        Int       @default(0)
   bundle        bundle?   @relation(fields: [bundleId], references: [bundleId])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt

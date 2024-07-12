@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Card,
-  Grid,
   Icon,
   Image,
   InlineGrid,
@@ -99,7 +98,7 @@ function sectionsDetails() {
                     {title}
                   </Text>
                   <Text variant="headingMd" as="h5">
-                    ${price}
+                    {price === 0 ? "Free" : "$" + price}
                   </Text>
                 </InlineGrid>
               </Box>

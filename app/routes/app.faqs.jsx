@@ -4,7 +4,6 @@ import {
   Page,
   Box,
   Text,
-  Card,
   BlockStack,
   Icon,
   InlineStack,
@@ -22,9 +21,6 @@ export const loader = async () => {
 
 const FAQPage = () => {
   let faqs = useLoaderData();
-
-  console.log("faqs");
-  console.log(faqs);
 
   const [openIndex, setOpenIndex] = useState(null);
 
@@ -56,7 +52,7 @@ const FAQPage = () => {
       {/* Shows List of FAQs */}
       {faqs.map((item, index) => (
         <Box padding="200" key={index}>
-          <Box background="bg-fill" borderRadius="200">
+          <Box background="bg-fill" borderRadius="200" shadow="300">
             <BlockStack gap="300" onClick={() => handleToggle(index)}>
               <Box
                 style={{
@@ -90,7 +86,7 @@ const FAQPage = () => {
               expandOnPrint
             >
               <Box padding="400" paddingBlockStart="0">
-                <Text variant="bodyMd" as="p">
+                <Text variant="bodyMd" as="p" tone="subdued">
                   {item.answer}
                 </Text>
               </Box>
