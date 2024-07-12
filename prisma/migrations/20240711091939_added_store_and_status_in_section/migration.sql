@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `section` ADD COLUMN `status` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `store` VARCHAR(191) NULL;

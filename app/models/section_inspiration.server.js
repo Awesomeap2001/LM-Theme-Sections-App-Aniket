@@ -3,8 +3,8 @@ import db from "../db.server";
 // GET SECTION INSPIRATION DATA FROM DATABASE
 export async function getDetails(shop) {
   try {
-    const data = await db.section_inspiration.findMany({
-      where: { shop }, // Find record where `shop` field matches the provided parameter
+    const data = await db.section.findMany({
+      // where: { shop }, // Find record where `shop` field matches the provided parameter
     });
 
     if (!data) {
@@ -39,6 +39,6 @@ export const postInspirationForm = async (data) => {
     }
   } catch (error) {
     console.log("Error in postInspirationForm:", error);
-    throw new Error("Failed to post inspiration form");
+    throw new Error("Failed to create inspiration suggestion");
   }
 };
