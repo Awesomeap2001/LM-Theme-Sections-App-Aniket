@@ -365,7 +365,7 @@ export default function SectionInspiration() {
                         : "incomplete"
                     }
                   >
-                    {gridItem.price == 0 || gridItem.free ? "Free" : "Paid"}
+                    {gridItem.price == 0 || gridItem.free ? "Free" : "Locked"}
                   </Badge>
                 </InlineStack>
 

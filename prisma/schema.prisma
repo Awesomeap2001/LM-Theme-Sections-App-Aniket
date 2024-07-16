@@ -56,7 +56,9 @@ model bundle {
   tags      String?   @db.LongText
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-  section   section[]
+
+  section section[]
+  charge  charge[]
 }
 
 model section {
@@ -72,9 +74,11 @@ model section {
   bundleId      Int?
   store         String?
   status        Int       @default(0)
-  bundle        bundle?   @relation(fields: [bundleId], references: [bundleId])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
+
+  bundle bundle?  @relation(fields: [bundleId], references: [bundleId])
+  charge charge[]
 }
 
 model category {
@@ -92,4 +96,21 @@ model inspiration_suggestions {
   image       String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
+}
+
+model charge {
+  id        Int        @id @default(autoincrement())
+  shop      String
+  chargeId  String
+  type      ChargeType
+  sectionId Int?
+  bundleId  Int?
+
+  section section? @relation(fields: [sectionId], references: [sectionId])
+  bundle  bundle?  @relation(fields: [bundleId], references: [bundleId])
+}
+
+enum ChargeType {
+  SECTION
+  BUNDLE
 }

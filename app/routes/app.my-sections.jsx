@@ -21,17 +21,54 @@ import {
 import "./css/my-sections-styles.css";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
+import { tabs } from "./data/explore-sections-data"; // Importing the data
 import db from "../db.server";
+import { authenticate } from "../shopify.server";
 
-export const loader = async () => {
+export const loader = async ({ request }) => {
   try {
-    const categories = await db.category.findMany();
-    const sections = await db.section.findMany();
+    const { session } = await authenticate.admin(request);
+
+    const sections = await db.section.findMany({
+      where: {
+        OR: [
+          {
+            store: session.shop,
+          },
+          {
+            charge: {
+              some: {
+                shop: session.shop,
+              },
+            },
+          },
+        ],
+      },
+    });
     if (sections.length === 0) {
       throw new Response("No sections found", { status: 404 });
     }
-    return json({ categories, sections });
+
+    const categories = await db.category.findMany();
+    if (categories.length === 0) {
+      throw new Response("No categories found", { status: 404 });
+    }
+
+    // Changing the categories to Tab format
+    const categoriesUpdated = categories.map((category) => {
+      let tab = {
+        id: category.categoryId,
+        content: category.categoryName,
+      };
+      return tab;
+    });
+    // Added All Tab at the start
+    categoriesUpdated.unshift({
+      id: 0,
+      content: "All",
+    });
+
+    return json({ sections, categories: categoriesUpdated });
   } catch (error) {
     console.error("Error fetching sections:", error);
     throw new Error("Failed to fetch sections data");
@@ -84,7 +121,6 @@ export default function MySections() {
     disabled: false,
     loading: false,
   };
-
   const [sortSelected, setSortSelected] = useState(["order asc"]);
   const [queryValue, setQueryValue] = useState("");
 
@@ -194,7 +230,7 @@ export default function MySections() {
         )
       : sections.filter(
           (gridItem) =>
-            gridItem.categoryId === parseInt(tabs[selected].category) &&
+            gridItem.categoryId === parseInt(categories[selected].id) &&
             gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
@@ -208,7 +244,7 @@ export default function MySections() {
     indexOfLastItem,
   );
 
-  console.log("Current Items:", currentItems); // Debug paginated data
+  // console.log("Current Items:", currentItems); // Debug paginated data
 
   const rightArrow = () => {
     return (
@@ -253,7 +289,7 @@ export default function MySections() {
             disabled: false,
             loading: false,
           }}
-          tabs={tabs}
+          tabs={categories}
           selected={selected}
           onSelect={handleTabChange}
           filters={filters}
