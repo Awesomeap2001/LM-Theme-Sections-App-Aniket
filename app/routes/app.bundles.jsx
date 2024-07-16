@@ -11,13 +11,30 @@ import {
 import { json, useLoaderData, useNavigate } from "@remix-run/react";
 import styles from "./css/bundles.module.css"; // Import custom CSS module
 import db from "../db.server";
+import { authenticate } from "../shopify.server";
 
-export const loader = async () => {
+export const loader = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
   try {
-    const bundles = await db.bundle.findMany();
+    const bundles = await db.bundle.findMany({
+      include: {
+        charge: {
+          where: {
+            shop: session.shop,
+          },
+        },
+      },
+    });
     if (bundles.length === 0) {
       throw new Response("No bundles found", { status: 404 });
     }
+
+    bundles.map((bundle) => {
+      if (bundle.charge.length > 0) {
+        bundle.price = 0;
+      }
+    });
+
     return json(bundles);
   } catch (error) {
     console.error("Error fetching bundles:", error);
@@ -85,7 +102,7 @@ export default function Bundles() {
                               {bundle.title}
                             </Text>
                             <Text as="p" variant="bodyMd" fontWeight="bold">
-                              ${bundle.price}
+                              {bundle.price === 0 ? "Free" : "$" + bundle.price}
                             </Text>
                           </InlineStack>
                         </Box>

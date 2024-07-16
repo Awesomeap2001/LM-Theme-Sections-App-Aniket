@@ -50,9 +50,6 @@ export const loader = async ({ request }) => {
     const charges = await db.charge.findMany({
       where: {
         shop: session.shop,
-        sectionId: {
-          not: null,
-        },
       },
     });
 
@@ -60,15 +57,17 @@ export const loader = async ({ request }) => {
       throw new Response("No sections found", { status: 404 });
     }
 
-    // make the section free for those who paid for it or they gave Inspiration for the compoenent
+    // Make the section free for those who paid for it or they gave inspiration for the component
     const sectionsUpdated = sections.map((section) => {
-      if (charges.some((charge) => charge.sectionId === section.sectionId)) {
-        section.free = true;
-      } else if (section.store === session.shop) {
-        section.free = true;
-      } else {
-        section.free = false;
-      }
+      const isFree =
+        charges.some(
+          (charge) =>
+            (charge.sectionId !== null &&
+              charge.sectionId === section.sectionId) ||
+            (charge.bundleId !== null && charge.bundleId === section.bundleId),
+        ) || section.store === session.shop;
+
+      section.free = isFree;
       return section;
     });
 
@@ -247,7 +246,7 @@ export default function ExploreSections() {
                     <InlineGrid gap={200}>
                       <InlineStack gap="200" wrap={false} align="space-between">
                         <Text variant="headingMd" as="h5">
-                          {gridItem.title + "➡" + gridItem.sectionId}
+                          {gridItem.title}
                         </Text>
                         <Badge
                           tone={
@@ -278,7 +277,7 @@ export default function ExploreSections() {
                         source={gridItem.imgSrc}
                       />
                       <InlineStack wrap={false} gap="100">
-                        {gridItem.price === 0 || gridItem.free === true ? (
+                        {/* {gridItem.price === 0 || gridItem.free === true ? (
                           <Button fullWidth>Install</Button>
                         ) : (
                           <Button
@@ -293,13 +292,15 @@ export default function ExploreSections() {
                           >
                             Buy Section
                           </Button>
-                        )}
-                        <Tooltip content="More Details">
-                          <Button
-                            icon={ViewIcon}
-                            onClick={() => handleViewButtonClick(gridItem)}
-                          />
-                        </Tooltip>
+                        )} */}
+
+                        <Button
+                          icon={ViewIcon}
+                          fullWidth
+                          onClick={() => handleViewButtonClick(gridItem)}
+                        >
+                          View Details
+                        </Button>
                       </InlineStack>
                     </InlineGrid>
                   </Card>
@@ -384,9 +385,9 @@ export default function ExploreSections() {
 
                       {modalContent.price === 0 ||
                       modalContent.free === true ? (
-                        <Button fullWidth variant="primary" icon={ProductIcon}>
-                          Install
-                        </Button>
+                        <Text variant="bodyMd" as="p" fontWeight="medium">
+                          You already possess this section
+                        </Text>
                       ) : (
                         <Button
                           fullWidth
@@ -405,7 +406,12 @@ export default function ExploreSections() {
                       )}
                     </BlockStack>
 
-                    <Box paddingBlockStart="200">
+                    <Box
+                      paddingBlockStart="200"
+                      visuallyHidden={
+                        modalContent.free || modalContent.price === 0
+                      }
+                    >
                       <InlineStack gap="050" blockAlign="center" align="center">
                         <Box as="span">
                           <Icon source={LockIcon} tone="base" />
