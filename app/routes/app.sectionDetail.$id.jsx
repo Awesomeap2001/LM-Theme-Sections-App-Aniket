@@ -35,7 +35,12 @@ export const loader = async ({ params, request }) => {
   const section = await db.section.findFirst({
     where: { sectionId },
     include: {
-      charge: true, // Include related charges
+      charge: {
+        where: {
+          sectionId: sectionId,
+          shop: session.shop,
+        },
+      }, // Include related charges
     },
   });
 

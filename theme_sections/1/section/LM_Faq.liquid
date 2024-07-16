@@ -1,0 +1,524 @@
+{% comment %} Start Stylesheet {% endcomment %}
+<style>
+    {{ section.settings.text_font | font_face }}
+    {{ section.settings.headline_font | font_face }}
+
+    @keyframes animateFAQ {
+    from {opacity: 0; }
+    to {opacity: 1; }
+    }
+
+    #lm-faq-{{ section.id }}.lm-faq-wrap p, #lm-faq-{{ section.id }}.lm-faq-wrap li {
+    font-size: {{ section.settings.text_size }}px;
+    font-family: {{ section.settings.text_font.family }}, {{ section.settings.text_font.fallback_families }};
+    font-weight: {{ section.settings.text_font.weight }};
+    line-height: {{ section.settings.text_line_height }};
+    }
+
+
+    #lm-faq-{{ section.id }}.lm-faq-wrap h3{
+    font-size: {{ section.settings.headline_size }}px;
+    font-family: {{ section.settings.headline_font.family }}, {{ section.settings.headline_font.fallback_families }};
+    font-weight: {{ section.settings.headline_font.weight }};
+    line-height: {{ section.settings.headline_line_height }};
+    padding: 0;
+    margin: 0 0 {{ section.settings.element_lmacing }}px 0;
+    color: {{ section.settings.headline_color }};
+    width: 97%;
+    }
+
+    #lm-faq-{{ section.id }}.lm-faq-wrap .answer h3 {
+    font-size: {{ section.settings.headline_size | minus: 10 }}px;
+    }
+
+
+    #lm-faq-{{ section.id }}.lm-faq-wrap {
+    background-image: {{ section.settings.background_color }};
+    width: 100%;
+    }
+
+    #lm-faq-{{ section.id }} .lm-faq {
+    position: relative;
+    margin: 0 auto;
+    max-width: {{ section.settings.max_width }}px;
+    padding: {{ section.settings.padding_top }}px {{ section.settings.padding_right }}px {{ section.settings.padding_bottom }}px {{ section.settings.padding_left }}px;
+    }
+
+    .lm-faq .lm-faq-grid {
+    position: relative;
+    margin: 0 auto;
+    display: block;
+    max-width: 1000px;
+    background: {{ section.settings.o_background_color }};
+    border-radius : 15px;
+    display: flex;
+    align-items: center;
+    }
+
+    .lm-faq-group {
+    position: relative;
+    margin: 0;
+    padding: 20px 0;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    }
+
+    .lm-faq-group * {
+    pointer-events: none;
+    }
+
+    .lm-faq-group a {
+    pointer-events: auto !important;
+    }
+
+    #lm-faq-{{ section.id }} .lm-faq-group h3.question {
+    color: {{ section.settings.question_color }};
+    margin: 0;
+    padding: 0;s
+    }
+    .lm-faq-group:hover h3.question{
+      color: {{ section.settings.icon_color }} !important;
+    }
+    #lm-faq-{{ section.id }} .lm-faq-group .answer {
+    color: {{ section.settings.answer_color }};
+    display: none;
+    margin: 0;
+    padding: 0 0 0 0;
+    }
+
+    #lm-faq-{{ section.id }} .lm-faq-group[active] .answer {
+    display: block;
+    animation: animateFAQ 250ms ease-in-out both;
+    }
+
+    .lm-faq-group::before {
+    content: '+';
+    display:block;
+    position: absolute;
+    top: 32px;
+    font-size: 35px;
+    line-height: 0;
+    color: {{ section.settings.icon_color }};
+    right: 0;
+    }
+
+    .lm-faq-group[active]::before {
+    content: '-';
+    display: block;
+    position: absolute;
+    font-size: 35px;
+    line-height: 0;
+    right: 5px;
+    top: 32px;
+    color: {{ section.settings.icon_color }};
+    }
+    .lm-faq-col{
+    width: 50%;
+    padding: 20px;
+  }
+  .lm-faq-image{
+    width: 50%;
+    padding: 20px;
+  }
+  {%- if section.settings.check_image -%}
+    .lm-faq-image{
+    display: none;}
+    .lm-faq-col{
+      width: 100%;
+      padding: 20px;
+    }
+
+  {%- endif -%}
+
+    .lm-faq-image img{
+    width: 100%;
+  }
+
+    .lm-faq-col .lm-faq-group:last-child{
+    border-bottom : none;
+    }
+    .lm_faq_heading{
+    font-size: {{section.settings.heading_size}}px ;
+    font-family: {{ section.settings.headline_font.family }}, {{ section.settings.headline_font.fallback_families }};
+    font-weight: 600;
+    text-align: {{ section.settings.headingAlign }};
+    }
+   .lm-faq-col [data-active="true"]{
+    padding-bottom: 10px;
+    }
+    .lm-faq-col [data-active="true"] .question{
+      color: {{ section.settings.icon_color }} !important;
+    }
+    .lm-right{
+      flex-direction: row-reverse;
+    }
+
+    @media only screen and (max-width: 800px) {
+    .lm_faq_heading{
+    font-size: {{ section.settings.mob_title_size }}px !important;
+    }
+    .lm-faq-group h3{
+    font-size: {{ section.settings.mob_headline_size }}px !important;
+    }
+    .lm-faq-grid{
+    flex-direction: column;
+  }
+    .lm-faq-image{
+    width: 100%;
+    padding: 10px;
+  }
+    .lm-faq-col{
+    width: 100%;
+    padding: 10px;
+    }
+    }
+</style>
+
+{% comment %} end stylesheet {% endcomment %}
+{% comment %}Faq Start {% endcomment %}
+<div id="lm-faq-{{ section.id }}" class="lm-faq-wrap" lm-wrap>
+  <div class="lm-faq" lm-container>
+    <div class="lm-faq-grid lm-{{ section.settings.image_position }}">
+      {%- if section.settings.image != blank -%}
+        <div class="lm-faq-image">
+          <img src="{{ section.settings.image  | img_url: 'large'}}" alt="" h>
+        </div>
+      {%- endif -%}
+      <div class="lm-faq-col" lm-column>
+        <h2 class="lm_faq_heading">{{ section.settings.heading }}</h2>
+        {% for block in section.blocks %}
+          <div class="lm-faq-group">
+            <h3 class="question">{{ block.settings.question }}</h3>
+            <div class="answer">{{ block.settings.answer }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% comment %} Faq End {% endcomment %}
+
+{% comment %} faq Script {% endcomment %}
+<script>
+  var fs_container = document.querySelector(`#lm-faq-{{ section.id }}`);
+  var fs_els = fs_container.querySelectorAll(`.lm-faq-group`);
+
+  for (var x = 0; x < fs_els.length; x++) {
+    fs_els[x].addEventListener('click', (e) => {
+      // Remove 'active' attribute from previously active element
+      var currentlyActive = fs_container.querySelector(`[data-active="true"]`);
+      if (currentlyActive) {
+        currentlyActive.removeAttribute('active');
+        currentlyActive.removeAttribute('data-active');
+      }
+
+      // Add 'active' attribute to the clicked element
+      e.target.setAttribute('active', '');
+      e.target.setAttribute('data-active', 'true');
+    });
+  }
+</script>
+
+{% schema %}
+{
+  "name": "👉 ĹМ Faq",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Image Block"
+    },
+    {
+      "type": "checkbox",
+      "id": "check_image",
+      "label": "Hide Image",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Add Image"      
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Main Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Add Title",
+      "default": "FAQ"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Text Size",
+      "default": 25
+    },
+    {
+      "type": "range",
+      "id": "mob_title_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile Title Size",
+      "default": 25
+    },
+    {
+      "type": "select",
+      "id": "headingAlign",
+      "label": "Text Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },  
+    {
+      "type": "font_picker",
+      "id": "headline_font",
+      "label": "Headline Font",
+      "default": "sans-serif"
+    },
+    {
+      "type": "range",
+      "id": "headline_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Headline Size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "mob_headline_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile Headline Size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "headline_line_height",
+      "label": "Headline Line Height",
+      "default": "1.15",
+      "options": [
+        {
+          "value": "1.05",
+          "label": "1.05"
+        },
+        {
+          "value": "1.15",
+          "label": "1.15"
+        },
+        {
+          "value": "1.25",
+          "label": "1.25"
+        },
+        {
+          "value": "1.5",
+          "label": "1.5"
+        },
+        {
+          "value": "1.75",
+          "label": "1.75"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Text",
+      "info": "Set the text size for your widget"
+    },
+    {
+      "type": "font_picker",
+      "id": "text_font",
+      "label": "Text Font",
+      "default": "sans-serif"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Text Size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "text_line_height",
+      "label": "Text Line Height",
+      "default": "1.25",
+      "options": [
+        {
+          "value": "1.05",
+          "label": "1.05"
+        },
+        {
+          "value": "1.15",
+          "label": "1.15"
+        },
+        {
+          "value": "1.25",
+          "label": "1.25"
+        },
+        {
+          "value": "1.5",
+          "label": "1.5"
+        },
+        {
+          "value": "1.75",
+          "label": "1.75"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Colors",
+      "info": "Set colors for the section."
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "default": "linear-gradient(207deg, rgba(171, 103, 233, 1), rgba(105, 101, 231, 1) 100%)",
+      "label": "Outer Background Color"
+    },
+    {
+      "type": "color_background",
+      "id": "o_background_color",
+      "default": "linear-gradient(164deg, #FFF 0%, #FFF 100%)",
+      "label": "Inner Background Color"
+    },
+    {
+      "type": "color",
+      "id": "question_color",
+      "default": "#111111",
+      "label": "Question Color"
+    },
+    {
+      "type": "color",
+      "id": "answer_color",
+      "default": "#555555",
+      "label": "Answer Color"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon Color",
+      "default": "#df5c34"
+    },
+    {
+      "type": "header",
+      "content": "Dimensions",
+      "info": "Set the section dimensions in pixels."
+    },
+    {
+      "type": "number",
+      "id": "max_width",
+      "default": 1000,
+      "label": "Max Width of Section"
+    },
+    {
+      "type": "number",
+      "id": "padding_top",
+      "default": 25,
+      "label": "Padding Top"
+    },
+    {
+      "type": "number",
+      "id": "padding_bottom",
+      "default": 25,
+      "label": "Padding Bottom"
+    },
+    {
+      "type": "number",
+      "id": "padding_left",
+      "default": 10,
+      "label": "Padding Left"
+    },
+    {
+      "type": "number",
+      "id": "padding_right",
+      "default": 10,
+      "label": "Padding Right"
+    },
+    {
+      "type": "number",
+      "id": "element_lmacing",
+      "default": 15,
+      "label": "Element lmacing"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Question",
+      "type": "question",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "question",
+          "label": "Question",
+          "default": "How does the FAQ section work?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Its simple really. You just add the questions as blocks and then you edit the question and answer.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Faq",
+      "blocks": [
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

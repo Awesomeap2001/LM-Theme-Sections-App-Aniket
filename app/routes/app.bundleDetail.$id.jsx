@@ -40,16 +40,31 @@ import {
   storeChargeinDatabase,
 } from "../models/payment.server";
 
-export const loader = async ({ params }) => {
+export const loader = async ({ params, request }) => {
   const bundleId = parseInt(params.id);
+  const { session } = await authenticate.admin(request);
 
   // console.log(`Loading bundle with ID: ${bundleId}`); // Debug log
 
-  const bundle = await db.bundle.findFirst({ where: { bundleId } });
+  const bundle = await db.bundle.findFirst({
+    where: { bundleId },
+    include: {
+      charge: {
+        where: {
+          shop: session.shop,
+          bundleId: bundleId,
+        },
+      },
+    },
+  });
 
   if (!bundle) {
     console.error(`Bundle with ID: ${bundleId} not found`); // Error log
     throw new Response("Not Found", { status: 404 });
+  }
+
+  if (bundle.charge.length > 0) {
+    bundle.free = true;
   }
 
   const bundleSections = await db.section.findMany({ where: { bundleId } });
@@ -58,6 +73,7 @@ export const loader = async ({ params }) => {
     title: bundle.title,
     image: bundle.imgSrc,
     price: bundle.price,
+    free: bundle.free,
     tags: bundle.tags,
     bundleSections,
   });
@@ -91,12 +107,7 @@ export const action = async ({ request, params }) => {
       const type = formData.get("type");
       const chargeId = formData.get("chargeId");
       const shop = session.shop;
-      const result = await storeChargeinDatabase({
-        id,
-        type,
-        chargeId,
-        shop,
-      });
+      const result = await storeChargeinDatabase({ id, type, chargeId, shop });
       return redirect(`/app/bundleDetail/${params.id}`);
   }
 };
@@ -110,7 +121,7 @@ const rightArrow = () => {
 };
 
 function BundlesDetails() {
-  let { title, image, price, tags, bundleSections } = useLoaderData();
+  let { title, image, price, tags, bundleSections, free } = useLoaderData();
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -200,23 +211,10 @@ function BundlesDetails() {
                             </div>
                           )}
                         </div>
-                        <InlineStack
-                          gap="100"
-                          align="space-between"
-                          blockAlign="center"
-                        >
-                          <Text as="p" variant="bodyMd" alignment="center">
-                            {item.title}
-                          </Text>
-                          <Text
-                            as="p"
-                            variant="bodyMd"
-                            alignment="center"
-                            fontWeight="bold"
-                          >
-                            ${item.price}
-                          </Text>
-                        </InlineStack>
+
+                        <Text as="p" variant="bodyMd" alignment="center">
+                          {item.title}
+                        </Text>
                       </InlineGrid>
                     </Card>
                   </Grid.Cell>
@@ -236,7 +234,7 @@ function BundlesDetails() {
                     {title}
                   </Text>
                   <Text variant="headingMd" as="h5">
-                    ${price}
+                    {free || price === 0 ? "Free" : "$" + price}
                   </Text>
                 </InlineGrid>
               </Box>
@@ -248,17 +246,23 @@ function BundlesDetails() {
                   ))}
                 </InlineStack>
 
-                <Button
-                  fullWidth
-                  variant="primary"
-                  icon={ProductIcon}
-                  onClick={() => handlePurchase(id, title, price)}
-                >
-                  Buy this Bundle
-                </Button>
+                {free || price === 0 ? (
+                  <Text variant="bodyMd" as="p">
+                    You already possess this bundle
+                  </Text>
+                ) : (
+                  <Button
+                    fullWidth
+                    variant="primary"
+                    icon={ProductIcon}
+                    onClick={() => handlePurchase(id, title, price)}
+                  >
+                    Buy this Section
+                  </Button>
+                )}
               </BlockStack>
 
-              <Box paddingBlockStart="200">
+              <Box paddingBlockStart="200" visuallyHidden={free || price === 0}>
                 <InlineStack gap="050" blockAlign="center" align="center">
                   <Box as="span">
                     <Icon source={LockIcon} tone="base" />

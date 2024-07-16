@@ -17,66 +17,115 @@ import {
   InlineStack,
   Pagination,
   InlineGrid,
+  Popover,
+  ActionList,
 } from "@shopify/polaris";
 import "./css/my-sections-styles.css";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { tabs } from "./data/explore-sections-data"; // Importing the data
 import db from "../db.server";
 import { authenticate } from "../shopify.server";
+import { getMySections } from "../models/section.server";
 
 export const loader = async ({ request }) => {
-  try {
-    const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
-    const sections = await db.section.findMany({
-      where: {
-        OR: [
-          {
-            store: session.shop,
-          },
-          {
-            charge: {
-              some: {
-                shop: session.shop,
-              },
-            },
-          },
-        ],
-      },
-    });
-    if (sections.length === 0) {
-      throw new Response("No sections found", { status: 404 });
-    }
+  const themes = await admin.rest.resources.Theme.all({
+    session: session,
+    fields: ["id", "name", "admin_graphql_api_id", "role"],
+  });
 
-    const categories = await db.category.findMany();
-    if (categories.length === 0) {
-      throw new Response("No categories found", { status: 404 });
-    }
+  // get all MySections
+  const sections = await getMySections(session.shop);
 
-    // Changing the categories to Tab format
-    const categoriesUpdated = categories.map((category) => {
-      let tab = {
-        id: category.categoryId,
-        content: category.categoryName,
-      };
-      return tab;
-    });
-    // Added All Tab at the start
-    categoriesUpdated.unshift({
-      id: 0,
-      content: "All",
-    });
-
-    return json({ sections, categories: categoriesUpdated });
-  } catch (error) {
-    console.error("Error fetching sections:", error);
-    throw new Error("Failed to fetch sections data");
+  const categories = await db.category.findMany();
+  if (categories.length === 0) {
+    throw new Response("No categories found", { status: 404 });
   }
+
+  // Changing the categories to Tab format
+  const categoriesUpdated = categories.map((category) => {
+    let tab = {
+      id: category.categoryId,
+      content: category.categoryName,
+    };
+    return tab;
+  });
+
+  // Adding "All" Tab at the start
+  categoriesUpdated.unshift({
+    id: 0,
+    content: "All",
+  });
+
+  return json({ sections, categories: categoriesUpdated, themes: themes.data });
+};
+
+export const action = async ({ request }) => {
+  const { admin, session } = await authenticate.admin(request);
+
+  const formData = await request.formData();
+  const id = formData.get("id");
+  const themeId = formData.get("themeId");
+  console.log("Theme Id- ", themeId);
+  console.log("Section Id-", id);
+
+  // const res = await admin.rest.resources.Asset({
+  //   session: session,
+  //   theme_id: themeId,
+  //   asset: { key: "sections/announcement-bar.liquid" },
+  // });
+
+  // console.log(res);
+
+  const asset = new admin.rest.resources.Asset({ session: session });
+
+  asset.theme_id = "168871166245";
+  asset.key = "sections/Aniket.liquid";
+  asset.value =
+    "<img src='backsoon-postit.png'><p>We are busy updating the store for you and will be back within the hour.</p>";
+  try {
+    const res = await asset.save({
+      update: true,
+    });
+    console.log("🎁", res);
+  } catch (error) {
+    console.log("🧧Error Storing Assets");
+  }
+
+  // const mainTheme = await fetchMainTheme(request);
+  // console.log(session.accessToken);
+
+  // const options = {
+  //   method: "PUT",
+  //   headers: {
+  //     "X-Shopify-Access-Token": session.accessToken,
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     asset: {
+  //       key: "sections/Aniket.liquid",
+  //       value:
+  //         "<p>We are busy updating the store for you and will be back within the hour.</p>",
+  //     },
+  //   }),
+  // };
+  // fetch(
+  //   `https://${session.shop}/admin/api/2024-01/themes/${themeId}/assets.json`,
+  //   options,
+  // )
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     console.log("Data: ");
+  //     console.log(data);
+  //   })
+  //   .catch((error) => console.error("Error:" + error));
+
+  return null;
 };
 
 export default function MySections() {
-  const { sections, categories } = useLoaderData();
+  const { sections, categories, themes } = useLoaderData();
   const [selected, setSelected] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const navigate = useNavigate(); // Get the navigate function from Remix.
@@ -84,6 +133,7 @@ export default function MySections() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const itemsPerPage = 9; // Items per page
+  const [popoverActive, setPopoverActive] = useState(null);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -220,9 +270,6 @@ export default function MySections() {
     handleTaggedWithRemove,
   ]);
 
-  // Flatten the imageGrids array
-  // const flattenedImageGrids = imageGrids.flat();
-  // console.log(selected);
   const filteredImageGrids =
     selected === 0
       ? sections.filter((gridItem) =>
@@ -234,8 +281,6 @@ export default function MySections() {
             gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
-  // console.log("Filtered Image Grids:", filteredImageGrids); // Debug filtered data
-
   // Implement pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -245,6 +290,32 @@ export default function MySections() {
   );
 
   // console.log("Current Items:", currentItems); // Debug paginated data
+
+  // Popover for Themes
+  const togglePopoverActive = useCallback(
+    (id) =>
+      setPopoverActive((popoverActive) => (popoverActive === id ? null : id)),
+    [],
+  );
+
+  const activator = (id) => (
+    <Button
+      onClick={() => togglePopoverActive(id)}
+      variant="primary"
+      fullWidth
+      disclosure
+    >
+      Add to Theme
+    </Button>
+  );
+
+  const submit = useSubmit();
+
+  // When Click on Theme
+  const addSectionToTheme = (id, theme) => {
+    // alert(`Section ${id} added to theme ${theme.name}`);
+    submit({ id, themeId: theme.id }, { method: "POST" });
+  };
 
   const rightArrow = () => {
     return (
@@ -333,7 +404,24 @@ export default function MySections() {
                       <Text variant="headingSm" as="h6">
                         {gridItem.title}
                       </Text>
-                      <Button fullWidth>Try Section</Button>
+
+                      {/* For Themes dropdown */}
+                      <Popover
+                        active={popoverActive === gridItem.sectionId}
+                        activator={activator(gridItem.sectionId)}
+                        autofocusTarget="first-node"
+                        onClose={() => togglePopoverActive(gridItem.sectionId)}
+                        fullWidth
+                      >
+                        <ActionList
+                          actionRole="menuitem"
+                          items={themes.map((theme) => ({
+                            content: `${theme.name} ${theme.role === "main" && "(Current)"}`,
+                            onAction: () =>
+                              addSectionToTheme(gridItem.sectionId, theme),
+                          }))}
+                        />
+                      </Popover>
                     </InlineGrid>
                   </Box>
                 </BlockStack>
