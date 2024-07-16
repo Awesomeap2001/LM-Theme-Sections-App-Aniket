@@ -1,5 +1,13 @@
 import { json } from "@remix-run/node";
-import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
+import {
+  redirect,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Bleed,
   BlockStack,
@@ -24,8 +32,13 @@ import {
   BillIcon,
 } from "@shopify/polaris-icons";
 import db from "../db.server";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./css/my-sections-styles.css";
+import { authenticate } from "../shopify.server";
+import {
+  purchaseSection,
+  storeChargeinDatabase,
+} from "../models/payment.server";
 
 export const loader = async ({ params }) => {
   const bundleId = parseInt(params.id);
@@ -50,6 +63,44 @@ export const loader = async ({ params }) => {
   });
 };
 
+export const action = async ({ request, params }) => {
+  const { admin, session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const submitType = formData.get("submitType");
+  const id = formData.get("id");
+
+  switch (submitType) {
+    // Purchase Section i.e. Payment Gateway Integration
+    case "purchaseSection":
+      const name = formData.get("name");
+      const price = formData.get("price");
+      const returnUrl = `https://admin.shopify.com/store/${session.shop.replace(".myshopify.com", "")}/apps/${process.env.APP_NAME}/app/bundleDetail/${params.id}?type=BUNDLE`;
+      const response = await purchaseSection(admin.graphql, {
+        name,
+        price,
+        returnUrl,
+      });
+
+      const confirmationUrl =
+        response.data.appPurchaseOneTimeCreate.confirmationUrl;
+
+      return json({ confirmationUrl, sectionId: id });
+
+    // Store the ChargeId in database i.e. Store Payment Details
+    case "storeChargeData":
+      const type = formData.get("type");
+      const chargeId = formData.get("chargeId");
+      const shop = session.shop;
+      const result = await storeChargeinDatabase({
+        id,
+        type,
+        chargeId,
+        shop,
+      });
+      return redirect(`/app/bundleDetail/${params.id}`);
+  }
+};
+
 const rightArrow = () => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -68,6 +119,39 @@ function BundlesDetails() {
     // Use navigate function to change the route programmatically
     navigate(`/app/bundleDetail/${id}/section/${sectionId}`);
   };
+
+  // Section Purchase
+  const submit = useSubmit();
+  const handlePurchase = (id, name, price) => {
+    submit(
+      { id, name, price, submitType: "purchaseSection" },
+      { method: "POST" },
+    );
+  };
+
+  // Response from Action
+  const response = useActionData();
+
+  // Redirect to Payment URL
+  useEffect(() => {
+    if (response && response.confirmationUrl) {
+      window.top.location.href = response.confirmationUrl;
+    }
+  }, [response]);
+
+  // Get the ChargeId from URL after Payment Success
+  const [searchParams] = useSearchParams();
+  const chargeId = searchParams.get("charge_id");
+  const type = searchParams.get("type");
+
+  useEffect(() => {
+    if (chargeId) {
+      submit(
+        { chargeId, id, type, submitType: "storeChargeData" },
+        { method: "POST" },
+      );
+    }
+  }, [chargeId]);
 
   return (
     <Page backAction={{ content: "Bundle", url: "/app/bundles" }} title={title}>
@@ -164,7 +248,12 @@ function BundlesDetails() {
                   ))}
                 </InlineStack>
 
-                <Button fullWidth variant="primary" icon={ProductIcon}>
+                <Button
+                  fullWidth
+                  variant="primary"
+                  icon={ProductIcon}
+                  onClick={() => handlePurchase(id, title, price)}
+                >
                   Buy this Bundle
                 </Button>
               </BlockStack>

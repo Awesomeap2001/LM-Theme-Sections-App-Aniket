@@ -1,5 +1,4 @@
 import { json } from "@remix-run/node";
-
 import { useLoaderData } from "@remix-run/react";
 import {
   Bleed,
@@ -23,34 +22,48 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import { imageGrids } from "./data/explore-sections-data";
 import db from "../db.server";
+import { authenticate } from "../shopify.server";
 
-export const loader = async ({ params }) => {
+export const loader = async ({ params, request }) => {
   const sectionId = parseInt(params.id);
+  const { session } = await authenticate.admin(request);
 
-  console.log(`Loading section with ID: ${sectionId}`); // Debug log
+  // console.log(`Loading section with ID: ${sectionId}`); // Debug log
 
-  // Find the bundle containing the given sectionId
-  const section = await db.section.findFirst({ where: { sectionId } });
-  console.log(section);
+  // Fetch the section by sectionId and include related charges
+  const section = await db.section.findFirst({
+    where: { sectionId },
+    include: {
+      charge: true, // Include related charges
+    },
+  });
 
   if (!section) {
-    console.error(`section with ID: ${sectionId} not found`); // Error log
-    throw new Response("Not Found", { status: 404 });
+    console.error(`Section with ID: ${sectionId} not found`); // Error log
+    throw new Response("Section Not Found", { status: 404 });
+  }
+
+  if (section.charge.some((charge) => charge.sectionId === section.sectionId)) {
+    section.free = true;
+  } else if (section.store === session.shop) {
+    section.free = true;
+  } else {
+    section.free = false;
   }
 
   return json({
     title: section.title,
     image: section.imgSrc,
     price: section.price,
+    free: section.free,
     details: JSON.parse(section.details),
     tags: JSON.parse(section.tags),
   });
 };
 
 function sectionsDetails() {
-  let { title, image, price, details, tags } = useLoaderData();
+  let { title, image, price, details, tags, free } = useLoaderData();
 
   return (
     <Page
@@ -98,7 +111,7 @@ function sectionsDetails() {
                     {title}
                   </Text>
                   <Text variant="headingMd" as="h5">
-                    {price === 0 ? "Free" : "$" + price}
+                    {free || price === 0 ? "Free" : "$" + price}
                   </Text>
                 </InlineGrid>
               </Box>
@@ -110,9 +123,15 @@ function sectionsDetails() {
                   ))}
                 </InlineStack>
 
-                <Button fullWidth variant="primary" icon={ProductIcon}>
-                  Buy this Section
-                </Button>
+                {free || price === 0 ? (
+                  <Button fullWidth variant="primary">
+                    Install
+                  </Button>
+                ) : (
+                  <Button fullWidth variant="primary" icon={ProductIcon}>
+                    Buy this Section
+                  </Button>
+                )}
               </BlockStack>
 
               <Box paddingBlockStart="200">

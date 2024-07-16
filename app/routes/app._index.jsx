@@ -1,38 +1,67 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { json } from "@remix-run/node";
-import { useActionData, useNavigation, useSubmit } from "@remix-run/react";
-import { ChartVerticalIcon } from "@shopify/polaris-icons";
+import {
+  ChartVerticalIcon,
+  QuestionCircleIcon,
+  PlayIcon,
+  NoteIcon,
+  ChatIcon,
+} from "@shopify/polaris-icons";
 import {
   Page,
   Layout,
   Text,
   Card,
-  Button,
   BlockStack,
-  Box,
-  List,
-  Link,
   InlineStack,
   MediaCard,
   VideoThumbnail,
   Grid,
-  LegacyCard,
   Divider,
-  Frame,
   Modal,
-  LegacyStack,
-  TextContainer,
   EmptyState,
   Icon,
   Banner,
+  Button,
+  Box,
 } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import db from "../db.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
+  const { data } = await admin.rest.resources.Shop.all({
+    session: session,
+    fields: "name",
+  });
 
-  return null;
+  const sectionCount = await db.section.count();
+  const mySectionCount = await db.section.count({
+    where: {
+      OR: [
+        {
+          store: session.shop,
+        },
+        {
+          charge: {
+            some: {
+              shop: session.shop,
+            },
+          },
+        },
+      ],
+    },
+  });
+  console.log(mySectionCount);
+  const inspirationCount = await db.section_inspiration.count();
+
+  return json({
+    shopName: data[0].name,
+    sectionCount,
+    mySectionCount,
+    inspirationCount,
+  });
 };
 
 export const action = async ({ request }) => {
@@ -103,12 +132,10 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
-  const nav = useNavigation();
-  const actionData = useActionData();
-  const submit = useSubmit();
-  const shopify = useAppBridge();
-
+  const { shopName, sectionCount, mySectionCount, inspirationCount } =
+    useLoaderData();
   const [active, setActive] = useState(false);
+  const navigate = useNavigate();
 
   const toggleModal = useCallback(() => setActive((active) => !active), []);
 
@@ -117,8 +144,72 @@ export default function Index() {
       <BlockStack gap="500">
         {/* Dashboard Title */}
         <Text variant="headingLg" as="h5">
-          "Hi 👋, Silver Ponies Home Test!"
+          Hi 👋, {shopName}!
         </Text>
+
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="500">
+                <BlockStack gap="200">
+                  <div
+                    style={{
+                      background: "#eaf4ff",
+                      padding: "10px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <InlineStack wrap={false} gap={100}>
+                      <Text as="h2">
+                        <Icon source={ChartVerticalIcon} tone="success" />
+                      </Text>
+                      <Text as="h2" variant="headingMd" tone="success">
+                        Explore
+                      </Text>
+                    </InlineStack>
+                  </div>
+                  <Text variant="bodyMd" as="p">
+                    Discover all sections, your favorites, and inspirations!
+                  </Text>
+                </BlockStack>
+
+                {/* Show Counts */}
+                <Grid>
+                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                    <Card>
+                      <Text variant="bodyMd" as="p">
+                        All Sections
+                      </Text>
+                      <Text as="h2" variant="headingLg">
+                        {sectionCount}
+                      </Text>
+                    </Card>
+                  </Grid.Cell>
+                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                    <Card>
+                      <Text variant="bodyMd" as="p">
+                        My Sections
+                      </Text>
+                      <Text as="h2" variant="headingLg">
+                        {mySectionCount}
+                      </Text>
+                    </Card>
+                  </Grid.Cell>
+                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                    <Card>
+                      <Text variant="bodyMd" as="p">
+                        Section Inspirations
+                      </Text>
+                      <Text as="h2" variant="headingLg">
+                        {inspirationCount}
+                      </Text>
+                    </Card>
+                  </Grid.Cell>
+                </Grid>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
 
         {/* Show Introductory Videos */}
         <Layout>
@@ -226,37 +317,35 @@ export default function Index() {
           <Layout.Section variant="oneThird">
             <BlockStack gap="500">
               <Card>
-                <Banner>
-                  <Text as="h2" variant="headingMd">
-                    Help Center
-                  </Text>
-                </Banner>
-                <Divider borderWidth="050" borderColor="transparent" />
-                <Text variant="bodyMd" as="p">
-                  Add tags to your order.
-                </Text>
-                <Link url="https://help.shopify.com/manual">
-                  fulfilling orders
-                </Link>
-              </Card>
-            </BlockStack>
-            <Divider borderWidth="050" borderColor="transparent" />
-            <BlockStack gap="500">
-              <Card>
-                <Banner>
-                  <Text as="h2" variant="headingMd">
-                    Contact Support
-                  </Text>
-                </Banner>
+                <BlockStack gap="200">
+                  <Banner tone="info" icon={QuestionCircleIcon}>
+                    <Text as="h2" variant="headingMd">
+                      Help Center
+                    </Text>
+                  </Banner>
 
-                <Divider borderWidth="050" borderColor="transparent" />
+                  <Divider borderColor="border" />
 
-                <Text variant="bodyMd" as="p">
-                  Add tags to your order.
-                </Text>
-                <Link url="https://help.shopify.com/manual">
-                  fulfilling orders
-                </Link>
+                  <Button
+                    target="_blank"
+                    url="https://forms.gle/baN6tqXgAu2WnWW3A"
+                    icon={ChatIcon}
+                  >
+                    Support
+                  </Button>
+                  <Button
+                    icon={NoteIcon}
+                    tone="success"
+                    onClick={() => {
+                      navigate("/app/section-inspiration");
+                    }}
+                  >
+                    Request a Section
+                  </Button>
+                  <Button icon={PlayIcon} tone="critical">
+                    Youtube Tutorials
+                  </Button>
+                </BlockStack>
               </Card>
             </BlockStack>
           </Layout.Section>
@@ -286,68 +375,6 @@ export default function Index() {
         </Layout>
 
         {/* Show Layout OverView */}
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <BlockStack gap="500">
-                <BlockStack gap="200">
-                  <div
-                    style={{
-                      background: "#eaf4ff",
-                      padding: "10px",
-                    }}
-                  >
-                    <InlineStack wrap={false}>
-                      <Text as="h2">
-                        <Icon source={ChartVerticalIcon} tone="success" />
-                      </Text>
-                      <Text as="h2" variant="headingMd" tone="success">
-                        Overview
-                      </Text>
-                    </InlineStack>
-                  </div>
-                  <Text variant="bodyMd" as="p">
-                    Statistics of layouts you have installed
-                  </Text>
-                </BlockStack>
-
-                {/* Show Counts */}
-                <Grid>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
-                    <Card>
-                      <Text variant="bodyMd" as="p">
-                        Sections
-                      </Text>
-                      <Text as="h2" variant="headingLg">
-                        0
-                      </Text>
-                    </Card>
-                  </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
-                    <Card>
-                      <Text variant="bodyMd" as="p">
-                        Pages & templates
-                      </Text>
-                      <Text as="h2" variant="headingLg">
-                        0
-                      </Text>
-                    </Card>
-                  </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
-                    <Card>
-                      <Text variant="bodyMd" as="p">
-                        Styles
-                      </Text>
-                      <Text as="h2" variant="headingLg">
-                        0
-                      </Text>
-                    </Card>
-                  </Grid.Cell>
-                </Grid>
-              </BlockStack>
-            </Card>
-          </Layout.Section>
-        </Layout>
       </BlockStack>
     </Page>
   );
