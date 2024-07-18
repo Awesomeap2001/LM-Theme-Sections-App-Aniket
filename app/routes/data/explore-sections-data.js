@@ -3,7 +3,7 @@
 export const tabs = [
   {
     id: "all",
-    content: "All",
+    content: "All edit",
     accessibilityLabel: "All Sections",
     panelID: "all-sections-content",
     category: null,

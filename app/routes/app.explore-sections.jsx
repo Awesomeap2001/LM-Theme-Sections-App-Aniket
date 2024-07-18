@@ -18,7 +18,7 @@ import {
   Badge,
   Tooltip,
 } from "@shopify/polaris";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ViewIcon,
   ProductIcon,
@@ -26,33 +26,130 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import { tabs, imageGrids } from "./data/explore-sections-data"; // Importing the data
 import db from "../db.server";
-import { json, useLoaderData } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  useActionData,
+  useLoaderData,
+  useParams,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
+import { authenticate } from "../shopify.server";
+import {
+  purchaseSection,
+  storeChargeinDatabase,
+} from "../models/payment.server";
 
-export const loader = async () => {
+export const loader = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
+
   try {
     const sections = await db.section.findMany();
+    const charges = await db.charge.findMany({
+      where: {
+        shop: session.shop,
+      },
+    });
+
     if (sections.length === 0) {
       throw new Response("No sections found", { status: 404 });
     }
-    return json(sections);
+
+    // Make the section free for those who paid for it or they gave inspiration for the component
+    const sectionsUpdated = sections.map((section) => {
+      const isFree =
+        charges.some(
+          (charge) =>
+            (charge.sectionId !== null &&
+              charge.sectionId === section.sectionId) ||
+            (charge.bundleId !== null && charge.bundleId === section.bundleId),
+        ) || section.store === session.shop;
+
+      section.free = isFree;
+      return section;
+    });
+
+    // get categories
+    const categories = await db.category.findMany();
+    if (categories.length === 0) {
+      throw new Response("No categories found", { status: 404 });
+    }
+
+    // Changing the categories to Tab format
+    const categoriesUpdated = categories.map((category) => {
+      let tab = {
+        id: category.categoryId,
+        content: category.categoryName,
+      };
+      return tab;
+    });
+
+    // Added "All" Tab at the start
+    categoriesUpdated.unshift({
+      id: 0,
+      content: "All",
+    });
+
+    return json({ sections: sectionsUpdated, categories: categoriesUpdated });
   } catch (error) {
     console.error("Error fetching sections:", error);
     throw new Error("Failed to fetch sections data");
   }
 };
 
+export const action = async ({ request }) => {
+  const { admin, session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const submitType = formData.get("submitType");
+  const id = formData.get("id");
+
+  switch (submitType) {
+    // Purchase Section i.e. Payment Gateway Integration
+    case "purchaseSection":
+      const name = formData.get("name");
+      const price = formData.get("price");
+      const returnUrl = `https://admin.shopify.com/store/${session.shop.replace(".myshopify.com", "")}/apps/${process.env.APP_NAME}/app/explore-sections?type=SECTION&id=${id}`;
+      const response = await purchaseSection(admin.graphql, {
+        name,
+        price,
+        returnUrl,
+      });
+
+      const confirmationUrl =
+        response.data.appPurchaseOneTimeCreate.confirmationUrl;
+
+      return json({ confirmationUrl, sectionId: id });
+
+    // Store the ChargeId in database i.e. Store Payment Details
+    case "storeChargeData":
+      const type = formData.get("type");
+      const chargeId = formData.get("chargeId");
+      const shop = session.shop;
+      const result = await storeChargeinDatabase({
+        id,
+        type,
+        chargeId,
+        shop,
+      });
+      return redirect("/app/explore-sections");
+  }
+};
+
+// Client Component
 export default function ExploreSections() {
-  const sections = useLoaderData();
+  const { sections, categories } = useLoaderData();
   const [selected, setSelected] = useState(0);
   const [active, setActive] = useState(false);
   const [modalContent, setModalContent] = useState({
+    id: "",
     title: "",
     imgSrc: "",
     price: "",
     details: [],
     tags: [],
+    free: false,
   });
 
   // Handle event for showing Template Details Modal
@@ -62,15 +159,13 @@ export default function ExploreSections() {
   );
 
   // Handle event for Tabs
-  const handleTabChange = useCallback(
-    (selectedTabIndex) => setSelected(selectedTabIndex),
-    [],
-  );
+  const handleTabChange = useCallback((selectedTabIndex) => {
+    setSelected(selectedTabIndex);
+  }, []);
 
   // Handle event for setting modal content and showing the modal
   const handleViewButtonClick = useCallback(
     (gridItem) => {
-      console.log(gridItem);
       setModalContent(gridItem);
       handleShowTemplateModal();
     },
@@ -82,30 +177,65 @@ export default function ExploreSections() {
     selected === 0
       ? sections // Show all for "All" tab
       : sections.filter(
-          (item) => item.categoryId === parseInt(tabs[selected].category),
+          (item) => item.categoryId === parseInt(categories[selected].id),
         );
+
+  // Section Purchase
+  const submit = useSubmit();
+  const handlePurchase = (id, name, price) => {
+    submit(
+      { id, name, price, submitType: "purchaseSection" },
+      { method: "POST" },
+    );
+  };
+
+  // Response from Action
+  const response = useActionData();
+
+  // Redirect to Payment URL
+  useEffect(() => {
+    if (response && response.confirmationUrl) {
+      window.top.location.href = response.confirmationUrl;
+    }
+  }, [response]);
+
+  // Get the ChargeId from URL after Payment Success
+  const [searchParams] = useSearchParams();
+  const chargeId = searchParams.get("charge_id");
+  const id = searchParams.get("id");
+  const type = searchParams.get("type");
+
+  useEffect(() => {
+    if (chargeId) {
+      submit(
+        { chargeId, id, type, submitType: "storeChargeData" },
+        { method: "POST" },
+      );
+    }
+  }, [chargeId]);
 
   return (
     <Page fullWidth>
-      <BlockStack gap="500">
+      <BlockStack>
         {/* Show Page Title */}
-
-        <InlineStack>
-          <Box width="50px">
-            <Icon source='<?xml version="1.0" ?><svg height="150px" width="100px" viewBox="0 0 96.43 96.43" xmlns="http://www.w3.org/2000/svg"><title/><g data-name="Layer 2" id="Layer_2"><g data-name="Layer 1" id="Layer_1-2"><path d="M58.67,72.67a1.67,1.67,0,0,1,2,.27L80.59,92.86c4,4,9.53,4.92,13.05,1.39l.61-.61c3.52-3.52,2.58-9.08-1.4-13.05l-20-20a1.65,1.65,0,0,1-.23-2,38.37,38.37,0,0,0-5.89-47.22A39.13,39.13,0,0,0,11.44,66.78,38.37,38.37,0,0,0,58.67,72.67Zm-40-13.11a28.91,28.91,0,1,1,40.89,0A28.95,28.95,0,0,1,18.67,59.56Z"/><path d="M57.06,36.79a4,4,0,0,0,3.72-5.61A25.45,25.45,0,0,0,27.45,17.67a4,4,0,1,0,3.15,7.44,17.37,17.37,0,0,1,22.73,9.21A4,4,0,0,0,57.06,36.79Z"/></g></g></svg>'></Icon>
-          </Box>
-          <Box>
-            <Text variant="headingLg" as="h5">
-              Explore Sections
-            </Text>
-          </Box>
-        </InlineStack>
+        <Box padding="300">
+          <InlineStack gap="200" blockAlign="center">
+            <Box>
+              <Icon source='<?xml version="1.0" ?><svg height="150px" width="100px" viewBox="0 0 96.43 96.43" xmlns="http://www.w3.org/2000/svg"><title/><g data-name="Layer 2" id="Layer_2"><g data-name="Layer 1" id="Layer_1-2"><path d="M58.67,72.67a1.67,1.67,0,0,1,2,.27L80.59,92.86c4,4,9.53,4.92,13.05,1.39l.61-.61c3.52-3.52,2.58-9.08-1.4-13.05l-20-20a1.65,1.65,0,0,1-.23-2,38.37,38.37,0,0,0-5.89-47.22A39.13,39.13,0,0,0,11.44,66.78,38.37,38.37,0,0,0,58.67,72.67Zm-40-13.11a28.91,28.91,0,1,1,40.89,0A28.95,28.95,0,0,1,18.67,59.56Z"/><path d="M57.06,36.79a4,4,0,0,0,3.72-5.61A25.45,25.45,0,0,0,27.45,17.67a4,4,0,1,0,3.15,7.44,17.37,17.37,0,0,1,22.73,9.21A4,4,0,0,0,57.06,36.79Z"/></g></g></svg>'></Icon>
+            </Box>
+            <Box>
+              <Text variant="headingLg" as="h5">
+                Explore Sections
+              </Text>
+            </Box>
+          </InlineStack>
+        </Box>
 
         {/* Listing of Tabs */}
-        <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
+        <Tabs tabs={categories} selected={selected} onSelect={handleTabChange}>
           {/* Shows Various List Templates */}
 
-          <Page fullWidth title={tabs[selected].content}>
+          <Page fullWidth title={categories[selected].content}>
             <Grid>
               {filteredSections.map((gridItem, index) => (
                 <Grid.Cell
@@ -114,20 +244,26 @@ export default function ExploreSections() {
                 >
                   <Card>
                     <InlineGrid gap={200}>
-                      <InlineStack gap="200" wrap={false}>
+                      <InlineStack gap="200" wrap={false} align="space-between">
                         <Text variant="headingMd" as="h5">
                           {gridItem.title}
                         </Text>
-                        {gridItem.badgeTone && gridItem.badgeProgress && (
-                          <Badge
-                            tone={gridItem.badgeTone}
-                            progress={gridItem.badgeProgress}
-                          >
-                            {gridItem.badgeTone === "success"
-                              ? "Unlock"
-                              : "Lock"}
-                          </Badge>
-                        )}
+                        <Badge
+                          tone={
+                            gridItem.price === 0 || gridItem.free
+                              ? "success"
+                              : "warning"
+                          }
+                          progress={
+                            gridItem.price === 0 || gridItem.free
+                              ? "complete"
+                              : "incomplete"
+                          }
+                        >
+                          {gridItem.price == 0 || gridItem.free
+                            ? "Free"
+                            : "Locked"}
+                        </Badge>
                       </InlineStack>
 
                       <Image
@@ -141,13 +277,30 @@ export default function ExploreSections() {
                         source={gridItem.imgSrc}
                       />
                       <InlineStack wrap={false} gap="100">
-                        <Button fullWidth>Install</Button>
-                        <Tooltip content="More Details">
+                        {/* {gridItem.price === 0 || gridItem.free === true ? (
+                          <Button fullWidth>Install</Button>
+                        ) : (
                           <Button
-                            icon={ViewIcon}
-                            onClick={() => handleViewButtonClick(gridItem)}
-                          />
-                        </Tooltip>
+                            fullWidth
+                            onClick={() =>
+                              handlePurchase(
+                                gridItem.sectionId,
+                                gridItem.title,
+                                gridItem.price,
+                              )
+                            }
+                          >
+                            Buy Section
+                          </Button>
+                        )} */}
+
+                        <Button
+                          icon={ViewIcon}
+                          fullWidth
+                          onClick={() => handleViewButtonClick(gridItem)}
+                        >
+                          View Details
+                        </Button>
                       </InlineStack>
                     </InlineGrid>
                   </Card>
@@ -158,8 +311,7 @@ export default function ExploreSections() {
         </Tabs>
       </BlockStack>
 
-      {/* Show Template Details in Popup */}
-
+      {/* Show Section Details in Modal */}
       <Modal
         size="large"
         open={active}
@@ -216,7 +368,10 @@ export default function ExploreSections() {
                           {modalContent.title}
                         </Text>
                         <Text variant="headingMd" as="h5">
-                          ${modalContent.price}
+                          {modalContent.price === 0 ||
+                          modalContent.free === true
+                            ? "Free"
+                            : "$" + modalContent.price}
                         </Text>
                       </InlineGrid>
                     </Box>
@@ -228,12 +383,35 @@ export default function ExploreSections() {
                           ))}
                       </InlineStack>
 
-                      <Button fullWidth variant="primary" icon={ProductIcon}>
-                        Buy this Section
-                      </Button>
+                      {modalContent.price === 0 ||
+                      modalContent.free === true ? (
+                        <Text variant="bodyMd" as="p" fontWeight="medium">
+                          You already possess this section
+                        </Text>
+                      ) : (
+                        <Button
+                          fullWidth
+                          variant="primary"
+                          icon={ProductIcon}
+                          onClick={() =>
+                            handlePurchase(
+                              modalContent.sectionId,
+                              modalContent.title,
+                              modalContent.price,
+                            )
+                          }
+                        >
+                          Buy this Section
+                        </Button>
+                      )}
                     </BlockStack>
 
-                    <Box paddingBlockStart="200">
+                    <Box
+                      paddingBlockStart="200"
+                      visuallyHidden={
+                        modalContent.free || modalContent.price === 0
+                      }
+                    >
                       <InlineStack gap="050" blockAlign="center" align="center">
                         <Box as="span">
                           <Icon source={LockIcon} tone="base" />
