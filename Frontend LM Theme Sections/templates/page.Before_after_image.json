@@ -1,0 +1,169 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "lm_before_after_image_ecdr9N": {
+      "type": "LM_before_after_image",
+      "blocks": {
+        "block_2_bMm6i3": {
+          "type": "block-2",
+          "settings": {
+            "before_image": "shopify:\/\/shop_images\/photoshop-face-before.jpg",
+            "after_image": "shopify:\/\/shop_images\/photoshop-face-after.jpg"
+          }
+        },
+        "block_1_gaTAWz": {
+          "type": "block-1",
+          "settings": {
+            "heading": "What is Lorem Ipsum?",
+            "richtext_block": "<p><strong>Lorem Ipsum<\/strong>is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "block_2_bMm6i3",
+        "block_1_gaTAWz"
+      ],
+      "settings": {
+        "bg_color": "rgba(0,0,0,0)",
+        "padding_top": 50,
+        "padding_bottom": 50,
+        "m_bottom": 20,
+        "container_width": 1440,
+        "color_border": "#121212",
+        "border_h": "2",
+        "border_w": "60",
+        "font": "quicksand_n7",
+        "color": "#121212",
+        "desktopFontSize": 30,
+        "tabletFontSize": 20,
+        "mobileFontSize": 20,
+        "desktopTextTransfer": "none",
+        "desktopTextAlign": "center",
+        "class": "",
+        "fontsize_D": 16,
+        "desc_color": "#121212",
+        "image_Position": "right"
+      }
+    },
+    "lm_spacer_jXfERh": {
+      "type": "LM_Spacer",
+      "settings": {
+        "height": 50,
+        "medium_screen_height": 30,
+        "small_screen_height": 30,
+        "class": ""
+      }
+    },
+    "lm_before_after_image_4BkMQc": {
+      "type": "LM_before_after_image",
+      "blocks": {
+        "block_2_NqDeiW": {
+          "type": "block-2",
+          "settings": {
+            "before_image": "shopify:\/\/shop_images\/photoshop-face-before.jpg",
+            "after_image": "shopify:\/\/shop_images\/photoshop-face-after.jpg"
+          }
+        },
+        "block_1_m9CdTN": {
+          "type": "block-1",
+          "settings": {
+            "heading": "Heading text",
+            "richtext_block": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "block_2_NqDeiW",
+        "block_1_m9CdTN"
+      ],
+      "settings": {
+        "bg_color": "#000",
+        "padding_top": 20,
+        "padding_bottom": 20,
+        "m_bottom": 20,
+        "container_width": 1200,
+        "color_border": "#fff",
+        "border_h": "2",
+        "border_w": "60",
+        "font": "open_sans_n4",
+        "color": "#fff",
+        "desktopFontSize": 30,
+        "tabletFontSize": 20,
+        "mobileFontSize": 20,
+        "desktopTextTransfer": "none",
+        "desktopTextAlign": "left",
+        "class": "",
+        "fontsize_D": 16,
+        "desc_color": "#fff",
+        "image_Position": "left"
+      }
+    },
+    "lm_spacer_kJBMwR": {
+      "type": "LM_Spacer",
+      "settings": {
+        "height": 50,
+        "medium_screen_height": 30,
+        "small_screen_height": 30,
+        "class": ""
+      }
+    },
+    "lm_before_after_image_HVrM6T": {
+      "type": "LM_before_after_image",
+      "blocks": {
+        "block_2_KW4GGm": {
+          "type": "block-2",
+          "settings": {
+            "before_image": "shopify:\/\/shop_images\/photoshop-face-before.jpg",
+            "after_image": "shopify:\/\/shop_images\/photoshop-face-after.jpg"
+          }
+        },
+        "block_1_y3dfWW": {
+          "type": "block-1",
+          "settings": {
+            "heading": "Heading text",
+            "richtext_block": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "block_2_KW4GGm",
+        "block_1_y3dfWW"
+      ],
+      "settings": {
+        "bg_color": "#000",
+        "padding_top": 20,
+        "padding_bottom": 20,
+        "m_bottom": 20,
+        "container_width": 1920,
+        "color_border": "#fff",
+        "border_h": "2",
+        "border_w": "60",
+        "font": "open_sans_n4",
+        "color": "#fff",
+        "desktopFontSize": 30,
+        "tabletFontSize": 20,
+        "mobileFontSize": 20,
+        "desktopTextTransfer": "none",
+        "desktopTextAlign": "left",
+        "class": "",
+        "fontsize_D": 16,
+        "desc_color": "#fff",
+        "image_Position": "left"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "lm_before_after_image_ecdr9N",
+    "lm_spacer_jXfERh",
+    "lm_before_after_image_4BkMQc",
+    "lm_spacer_kJBMwR",
+    "lm_before_after_image_HVrM6T"
+  ]
+}

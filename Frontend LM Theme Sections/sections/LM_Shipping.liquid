@@ -1,0 +1,304 @@
+<div id="Lm-shipping-{{ section.id }}" class="lm-shipping-section">
+  <div class="lm-shipping-container">
+    <h2 class="lm-shipping-heading">{{ section.settings.heading }}</h2>
+    <div class="lm-shipping-block">
+      {% for block in section.blocks %}
+        <div class="lm-shipping-box lm_icon_position-{{section.settings.iconPosition }}">
+          <div class="lm-shipping-img-block">
+            {% if block.settings.image != blank %}
+              <img src="{{ block.settings.image | image_url: width: 300 }}">
+            {% else %}
+              <svg
+                class="icon-type-truck"
+                stroke-width="1"
+                aria-hidden="true"
+                focusable="false"
+                role="presentation"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="40"
+                height="40"
+              >
+                <path d='M15.64 6.92L9.5 5.12V4a.5.5 0 00-.5-.5H1a.5.5 0 00-.5.5v8.5c0 .28.22.5.5.5h1.27a2.1 2.1 0 004.06 0h3.94a2.1 2.1 0 004.06 0h1.17a.5.5 0 00.5-.5V7.4a.5.5 0 00-.36-.48zM4.3 13.6a1.1 1.1 0 110-2.2 1.1 1.1 0 010 2.2zM6.33 12a2.1 2.1 0 00-4.06 0H1.5V4.5h7V12H6.33zm5.97 1.6a1.1 1.1 0 110-2.2 1.1 1.1 0 010 2.2zM15 12h-.67a2.1 2.1 0 00-4.06 0H9.5V6.17l5.5 1.6V12z'></path>
+              </svg>
+            {% endif %}
+          </div>
+          <div class="lm-shipping-text-block">
+            <h2
+              class="lm-shipping-title"
+              style="color: {{ section.settings.titlecolor }}; font-size: {{ section.settings.title-font-size }}px; font-family: {{ section.settings.title-font-family.family }}, {{ section.settings.title-font-family.fallback_families }};"
+            >
+              {{ block.settings.title }}
+            </h2>
+            <div
+              class="lm-desc-inner"
+              style="font-size: {{ section.settings.desc-size }}px; font-family: {{ section.settings.desc-family.family }}, {{ section.settings.desc-family.fallback_families }}; color: {{ section.settings.desc-color }}"
+            >
+              {{ block.settings.desc }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+  {{ section.settings.title-font-family | font_face }}
+  {{ section.settings.desc-family | font_face }}
+    #Lm-shipping-{{ section.id }}.lm-shipping-section{
+          padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+          background-color: {{ section.settings.main-bg-color }};
+    }
+    #Lm-shipping-{{ section.id }} .lm-shipping-block {
+      display: flex;
+      text-align:center;
+      justify-content: center;
+      flex-wrap:wrap;
+    }
+    #Lm-shipping-{{ section.id }} .lm-shipping-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding:0 10px;
+      }
+      #Lm-shipping-{{ section.id }} .lm-shipping-box {
+        width: 24.70%;
+    }
+    #Lm-shipping-{{ section.id }} .lm-shipping-heading {
+      margin:0 0 30px 0;
+      font-size: {{ section.settings.heading-font-size }}px;
+      color: {{ section.settings.heading-font-color }};
+      font-family: {{ section.settings.heading-font-family.family }}, {{ section.settings.heading-font-family.fallback_families }};
+      text-align:center;
+    }
+    #Lm-shipping-{{ section.id }} .lm-shipping-title {
+      margin: 0;
+      font-weight: 500;
+    }
+    #Lm-shipping-{{ section.id }} .lm-desc-inner p {
+      margin: 3px 0 0 0;
+      line-height: 20px;
+    }
+    #Lm-shipping-{{ section.id }} .lm-shipping-img-block img{
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+    #Lm-shipping-{{ section.id }} .lm_icon_position-left{
+      display: flex;
+    }
+    #Lm-shipping-{{ section.id }} .lm_icon_position-left .lm-shipping-img-block{
+      margin-right:15px;
+    }
+    #Lm-shipping-{{ section.id }} .lm_icon_position-left .lm-shipping-text-block {
+      text-align: left;
+    }
+    @media only screen and (max-width:769px) {
+      #Lm-shipping-{{ section.id }}.lm-shipping-section{
+        padding: {{ section.settings.mobile-padding_top }}px 0 {{ section.settings.mobile-padding_bottom }}px;
+      }
+      #Lm-shipping-{{ section.id }} .lm-shipping-container {
+        padding:0 30px;
+      }
+      #Lm-shipping-{{ section.id }} .lm-shipping-box {
+        width: 100%;
+        margin: 15px 0;
+      }
+      #Lm-shipping-{{ section.id }} .lm-shipping-heading{
+        font-size: {{ section.settings.mobile-heading-font-size}}px;
+      }
+    }
+</style>
+
+{% schema %}
+{
+  "name": "👉 ĹМ Shipping",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Styles"
+    },
+    {
+      "type": "color",
+      "id": "main-bg-color",
+      "label": "Background Color",
+      "default": "#fff"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "default": 50,
+      "label": "Padding Top Desktop",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "default": 50,
+      "label": "Padding Bottom Desktop",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "mobile-padding_top",
+      "default": 25,
+      "label": "Padding Top Mobile",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "mobile-padding_bottom",
+      "default": 25,
+      "label": "Padding Bottom Mobile",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "header",
+      "content": "Heading Styles"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Feature Title"
+    },
+    {
+      "type": "range",
+      "id": "heading-font-size",
+      "label": "Font Size On Desktop",
+      "max": 70,
+      "min": 10,
+      "default": 35
+    },
+    {
+      "type": "range",
+      "id": "mobile-heading-font-size",
+      "label": "Font Size On Mobile",
+      "max": 40,
+      "min": 10,
+      "default": 35
+    },
+    {
+      "type": "font_picker",
+      "id": "heading-font-family",
+      "label": "Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "heading-font-color",
+      "label": "Color",
+      "default": "#000"
+    },
+    {
+      "type": "header",
+      "content": "Shipping Item Styles"
+    },
+    {
+      "type": "select",
+      "id": "iconPosition",
+      "label": "Icon Position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "range",
+      "id": "title-font-size",
+      "label": "Title Font Size",
+      "max": 30,
+      "min": 10,
+      "default": 16
+    },
+    {
+      "type": "font_picker",
+      "id": "title-font-family",
+      "label": "Title Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "titlecolor",
+      "label": "Title Color",
+      "default": "#000"
+    },
+    {
+      "type": "range",
+      "id": "desc-size",
+      "label": "Text Font Size",
+      "max": 20,
+      "min": 10,
+      "default": 14
+    },
+    {
+      "type": "font_picker",
+      "id": "desc-family",
+      "label": "Text Font Family",
+      "default": "sans-serif"
+    },
+    {
+      "type": "color",
+      "id": "desc-color",
+      "label": "Text Color",
+      "default": "#000"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Item",
+      "type": "item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Icon"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Free Shipping"
+        },
+        {
+          "type": "richtext",
+          "id": "desc",
+          "label": "Text",
+          "default": "<p>Order today, receive tomorrow</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Shipping",
+      "blocks": [
+        {
+          "type": "item"
+        },
+        {
+          "type": "item"
+        },
+        {
+          "type": "item"
+        },
+        {
+          "type": "item"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
