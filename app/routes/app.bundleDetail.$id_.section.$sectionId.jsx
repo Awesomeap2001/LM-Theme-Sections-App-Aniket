@@ -1,6 +1,12 @@
 import { json } from "@remix-run/node";
-
-import { useLoaderData, useParams } from "@remix-run/react";
+import {
+  redirect,
+  useActionData,
+  useLoaderData,
+  useParams,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Bleed,
   BlockStack,
@@ -23,34 +29,114 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import db from "../db.server";
+// import db from "../db.server";
+import { getSectionDetails } from "../models/section.server";
+import { authenticate } from "../shopify.server";
+import {
+  purchaseSection,
+  storeChargeinDatabase,
+} from "../models/payment.server";
+import { useEffect } from "react";
 
-export const loader = async ({ params }) => {
+export const loader = async ({ params, request }) => {
   const sectionId = parseInt(params.sectionId);
-
-  console.log(`Loading section with ID: ${sectionId}`); // Debug log
+  const { session } = await authenticate.admin(request);
 
   // Find the bundle containing the given sectionId
-  const section = await db.section.findFirst({ where: { sectionId } });
-  console.log(section);
-
-  if (!section) {
-    console.error(`section with ID: ${sectionId} not found`); // Error log
-    throw new Response("Not Found", { status: 404 });
-  }
+  const section = await getSectionDetails(session.shop, sectionId);
 
   return json({
     title: section.title,
     image: section.imgSrc,
     price: section.price,
+    free: section.free,
     details: JSON.parse(section.details),
     tags: JSON.parse(section.tags),
   });
 };
 
+export const action = async ({ request }) => {
+  const { admin, session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const submitType = formData.get("submitType");
+  const id = formData.get("sectionId");
+  const bundleId = formData.get("bundleId");
+
+  switch (submitType) {
+    // Purchase Section i.e. Payment Gateway Integration
+    case "purchaseSection":
+      const name = formData.get("name");
+      const price = formData.get("price");
+      const returnUrl = `https://admin.shopify.com/store/${session.shop.replace(".myshopify.com", "")}/apps/${process.env.APP_NAME}/app/bundleDetail/${bundleId}/section/${id}?type=SECTION`;
+      const response = await purchaseSection(admin.graphql, {
+        name,
+        price,
+        returnUrl,
+      });
+
+      const confirmationUrl =
+        response.data.appPurchaseOneTimeCreate.confirmationUrl;
+
+      return json({ confirmationUrl, sectionId: id });
+
+    // Store the ChargeId in database i.e. Store Payment Details
+    case "storeChargeData":
+      const type = formData.get("type");
+      const chargeId = formData.get("chargeId");
+      const shop = session.shop;
+      const result = await storeChargeinDatabase({ id, type, chargeId, shop });
+      return redirect(`/app/bundleDetail/${bundleId}/section/${id}`);
+  }
+};
+
 function sectionsDetails() {
-  const { id } = useParams();
-  let { title, image, price, details, tags } = useLoaderData();
+  const { id, sectionId } = useParams();
+  let { title, image, price, free, details, tags } = useLoaderData();
+
+  // Section Purchase
+  const submit = useSubmit();
+  const handlePurchase = (sectionId, name, price) => {
+    submit(
+      {
+        sectionId,
+        name,
+        price,
+        bundleId: id,
+        submitType: "purchaseSection",
+      },
+      { method: "POST" },
+    );
+  };
+
+  // Response from Action
+  const response = useActionData();
+
+  // Redirect to Payment URL
+  useEffect(() => {
+    if (response && response.confirmationUrl) {
+      window.top.location.href = response.confirmationUrl;
+    }
+  }, [response]);
+
+  // Get the ChargeId from URL after Payment Success
+  const [searchParams] = useSearchParams();
+  const chargeId = searchParams.get("charge_id");
+  const type = searchParams.get("type");
+
+  useEffect(() => {
+    if (chargeId) {
+      submit(
+        {
+          chargeId,
+          sectionId,
+          bundleId: id,
+          type,
+          submitType: "storeChargeData",
+        },
+        { method: "POST" },
+      );
+    }
+  }, [chargeId]);
 
   return (
     <Page
@@ -98,7 +184,7 @@ function sectionsDetails() {
                     {title}
                   </Text>
                   <Text variant="headingMd" as="h5">
-                    ${price}
+                    {free || price === 0 ? "Free" : "$" + price}
                   </Text>
                 </InlineGrid>
               </Box>
@@ -110,12 +196,23 @@ function sectionsDetails() {
                   ))}
                 </InlineStack>
 
-                <Button fullWidth variant="primary" icon={ProductIcon}>
-                  Buy this Section
-                </Button>
+                {free || price === 0 ? (
+                  <Text variant="bodyMd" as="p">
+                    You already possess this bundle
+                  </Text>
+                ) : (
+                  <Button
+                    fullWidth
+                    variant="primary"
+                    icon={ProductIcon}
+                    onClick={() => handlePurchase(sectionId, title, price)}
+                  >
+                    Buy this Section
+                  </Button>
+                )}
               </BlockStack>
 
-              <Box paddingBlockStart="200">
+              <Box paddingBlockStart="200" visuallyHidden={free || price === 0}>
                 <InlineStack gap="050" blockAlign="center" align="center">
                   <Box as="span">
                     <Icon source={LockIcon} tone="base" />

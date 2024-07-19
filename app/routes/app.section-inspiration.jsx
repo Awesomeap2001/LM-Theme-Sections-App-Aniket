@@ -21,9 +21,13 @@ import {
   Bleed,
   InlineGrid,
   Icon,
-  Tooltip,
 } from "@shopify/polaris";
-import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useSubmit,
+  useNavigate,
+} from "@remix-run/react";
 import { appUrl, authenticate } from "../shopify.server";
 import {
   json,
@@ -32,10 +36,7 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
-import {
-  getDetails,
-  postInspirationForm,
-} from "../models/section_inspiration.server";
+import { postInspirationForm } from "../models/section_inspiration.server";
 import { useCallback, useEffect, useState } from "react";
 import { NoteIcon } from "@shopify/polaris-icons";
 import {
@@ -45,6 +46,7 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
+import { getAllSections } from "../models/section.server";
 
 // Function to generate a random 12-character string
 function generateRandomString() {
@@ -61,13 +63,7 @@ function generateRandomString() {
 // it loads data before page elements load
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
-  const data = await getDetails(session.shop);
-  const gridItems = data.map((section) => {
-    section.store === session.shop
-      ? (section.free = true)
-      : (section.free = false);
-    return section;
-  });
+  const gridItems = await getAllSections(session.shop);
   return json({ gridItems, appUrl });
 }
 
@@ -134,6 +130,7 @@ export const action = async ({ request }) => {
 };
 
 export default function SectionInspiration() {
+  const navigate = useNavigate();
   const { gridItems, appUrl } = useLoaderData();
   const [openModal, setOpenModal] = useState(false);
   const [active, setActive] = useState(false);
@@ -380,17 +377,18 @@ export default function SectionInspiration() {
                   source={gridItem.imgSrc}
                 />
                 <InlineStack wrap={false} gap="100">
-                  {gridItem.price === 0 || gridItem.free === true ? (
-                    <Button fullWidth>Install</Button>
-                  ) : (
-                    <Button fullWidth>Buy Section</Button>
-                  )}
-                  <Tooltip content="More Details">
-                    <Button
-                      icon={ViewIcon}
-                      onClick={() => handleViewButtonClick(gridItem)}
-                    />
-                  </Tooltip>
+                  <Button
+                    icon={ViewIcon}
+                    fullWidth
+                    // target="_blank"
+                    external
+                    url={`/app/sectionDetail/${gridItem.sectionId}`}
+                    // onClick={() =>
+                    //   navigate()
+                    // }
+                  >
+                    View Details
+                  </Button>
                 </InlineStack>
               </InlineGrid>
             </Card>

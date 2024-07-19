@@ -16,7 +16,6 @@ import {
   Bleed,
   InlineGrid,
   Badge,
-  Tooltip,
 } from "@shopify/polaris";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -32,7 +31,6 @@ import {
   redirect,
   useActionData,
   useLoaderData,
-  useParams,
   useSearchParams,
   useSubmit,
 } from "@remix-run/react";
@@ -41,35 +39,38 @@ import {
   purchaseSection,
   storeChargeinDatabase,
 } from "../models/payment.server";
+import { getAllSections } from "../models/section.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
 
   try {
-    const sections = await db.section.findMany();
-    const charges = await db.charge.findMany({
-      where: {
-        shop: session.shop,
-      },
-    });
+    // const sections = await db.section.findMany();
+    // const charges = await db.charge.findMany({
+    //   where: {
+    //     shop: session.shop,
+    //   },
+    // });
 
-    if (sections.length === 0) {
-      throw new Response("No sections found", { status: 404 });
-    }
+    // if (sections.length === 0) {
+    //   throw new Response("No sections found", { status: 404 });
+    // }
 
-    // Make the section free for those who paid for it or they gave inspiration for the component
-    const sectionsUpdated = sections.map((section) => {
-      const isFree =
-        charges.some(
-          (charge) =>
-            (charge.sectionId !== null &&
-              charge.sectionId === section.sectionId) ||
-            (charge.bundleId !== null && charge.bundleId === section.bundleId),
-        ) || section.store === session.shop;
+    // // Make the section free for those who paid for it or they gave inspiration for the component
+    // const sectionsUpdated = sections.map((section) => {
+    //   const isFree =
+    //     charges.some(
+    //       (charge) =>
+    //         (charge.sectionId !== null &&
+    //           charge.sectionId === section.sectionId) ||
+    //         (charge.bundleId !== null && charge.bundleId === section.bundleId),
+    //     ) || section.store === session.shop;
 
-      section.free = isFree;
-      return section;
-    });
+    //   section.free = isFree;
+    //   return section;
+    // });
+
+    const sections = await getAllSections(session.shop);
 
     // get categories
     const categories = await db.category.findMany();
@@ -92,7 +93,7 @@ export const loader = async ({ request }) => {
       content: "All",
     });
 
-    return json({ sections: sectionsUpdated, categories: categoriesUpdated });
+    return json({ sections, categories: categoriesUpdated });
   } catch (error) {
     console.error("Error fetching sections:", error);
     throw new Error("Failed to fetch sections data");
@@ -277,23 +278,6 @@ export default function ExploreSections() {
                         source={gridItem.imgSrc}
                       />
                       <InlineStack wrap={false} gap="100">
-                        {/* {gridItem.price === 0 || gridItem.free === true ? (
-                          <Button fullWidth>Install</Button>
-                        ) : (
-                          <Button
-                            fullWidth
-                            onClick={() =>
-                              handlePurchase(
-                                gridItem.sectionId,
-                                gridItem.title,
-                                gridItem.price,
-                              )
-                            }
-                          >
-                            Buy Section
-                          </Button>
-                        )} */}
-
                         <Button
                           icon={ViewIcon}
                           fullWidth

@@ -28,6 +28,7 @@ import {
 import { authenticate } from "../shopify.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import db from "../db.server";
+import { getMySections } from "../models/section.server";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -37,23 +38,7 @@ export const loader = async ({ request }) => {
   });
 
   const sectionCount = await db.section.count();
-  const mySectionCount = await db.section.count({
-    where: {
-      OR: [
-        {
-          store: session.shop,
-        },
-        {
-          charge: {
-            some: {
-              shop: session.shop,
-            },
-          },
-        },
-      ],
-    },
-  });
-  console.log(mySectionCount);
+  const mySectionCount = (await getMySections(session.shop)).length;
   const inspirationCount = await db.section_inspiration.count();
 
   return json({

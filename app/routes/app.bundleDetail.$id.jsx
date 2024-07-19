@@ -257,7 +257,7 @@ function BundlesDetails() {
                     icon={ProductIcon}
                     onClick={() => handlePurchase(id, title, price)}
                   >
-                    Buy this Section
+                    Buy this Bundle
                   </Button>
                 )}
               </BlockStack>
