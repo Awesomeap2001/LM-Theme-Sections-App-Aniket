@@ -1,0 +1,124 @@
+<style>
+  #shopify-section-{{ section.id }} .lm-border-space{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: {{ section.settings.max_width }}px;
+    margin: 0 auto;
+    padding: {{ section.settings.border_top_padding }}px 15px {{ section.settings.border_Bottom_padding }}px ;
+  }
+  #shopify-section-{{ section.id }} .Lm_border-left{
+    width: 50%;
+    height: {{ section.settings.border_width }}px;
+    display: block;
+    background-color: {{ section.settings.bg_color }};
+  }
+  #shopify-section-{{ section.id }} .Lm_border-right{
+    width: 50%;
+    height:{{ section.settings.border_width }}px;
+    display: block;
+    background-color: {{ section.settings.bg_color }};
+  }
+  #shopify-section-{{ section.id }} .Lm_border-image{
+    padding: 15px;
+  }
+  #shopify-section-{{ section.id }} .Lm_border-image svg{
+    height: 30px;
+    width: 30px;
+    fill:  {{ section.settings.bg_color }};
+  }
+
+  #shopify-section-{{ section.id }} .Lm_border-image svg path{
+    fill:  {{ section.settings.bg_color }};
+  }
+  @media only screen and (max-width: 1023px) {
+    /* Add any necessary styles for screen widths below 1023px */
+  }
+  
+  @media only screen and (max-width: 767px) {
+    /* Add any necessary styles for screen widths below 767px */
+  }  
+</style>
+
+<div class="lm-sections lm-border-space {{ section.settings.class }}">
+  <span class="Lm_border-left"></span>
+  <span class="Lm_border-image">{{ section.settings.svg_path }}</span>
+  <span class="Lm_border-right"></span>
+</div>
+
+{% schema %}
+{
+  "name": "👉 ĹМ Border Pattern",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "svg_path",
+      "label": "SVG Path",
+      "info": "Upload Svg Path",
+      "default": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><path d=\"M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8z\"></path></svg>"
+    },
+    {
+      "type": "header",
+      "content": "Border Pattern Styles"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Border Pattern Background Color",
+      "default": "#000"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 500,
+      "max": 1440,
+      "step": 10,
+      "unit": "px",
+      "label": "Border Pattern Width",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Border Pattern Border Width",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "border_top_padding",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "border_Bottom_padding",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 20
+    },
+    {
+      "type": "text",
+      "id": "class",
+      "label": "CSS class",
+      "info": "Add class to this section, for example: my-class-1 my-class-2"
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Border Pattern"
+    }
+  ]
+}
+{% endschema %}

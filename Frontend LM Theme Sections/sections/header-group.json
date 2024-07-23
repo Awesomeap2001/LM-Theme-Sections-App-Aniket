@@ -2,28 +2,191 @@
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
-    "announcement-bar": {
-      "type": "announcement-bar",
+    "lm_announcement_bar_MBMrtU": {
+      "type": "LM_Announcement_Bar",
       "blocks": {
-        "announcement-bar-0": {
+        "announcement_iNTaTV": {
           "type": "announcement",
           "settings": {
-            "text": "Welcome to our store",
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_qCm9K9": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_9J4chj": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_7n4Q7H": {
+          "type": "announcement",
+          "settings": {
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_8eQbMD": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_7bkgdx": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_3RKa4L": {
+          "type": "announcement",
+          "settings": {
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_iGjBPj": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_K3LWUb": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_TiKD7G": {
+          "type": "announcement",
+          "settings": {
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_4L8qQV": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_3NUJgk": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_XLUXAN": {
+          "type": "announcement",
+          "settings": {
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_V4AUVq": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_Dh9fBb": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_wUMHPt": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_rHeWKL": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_Cbhndn": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
+            "link": ""
+          }
+        },
+        "announcement_LyPUnb": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free Shipping 👉",
+            "link": ""
+          }
+        },
+        "announcement_xeGgED": {
+          "type": "announcement",
+          "settings": {
+            "text": "Trusted By 1000+",
+            "link": ""
+          }
+        },
+        "announcement_rfBe4g": {
+          "type": "announcement",
+          "settings": {
+            "text": "Easy Returns",
             "link": ""
           }
         }
       },
       "block_order": [
-        "announcement-bar-0"
+        "announcement_iNTaTV",
+        "announcement_qCm9K9",
+        "announcement_9J4chj",
+        "announcement_7n4Q7H",
+        "announcement_8eQbMD",
+        "announcement_7bkgdx",
+        "announcement_3RKa4L",
+        "announcement_iGjBPj",
+        "announcement_K3LWUb",
+        "announcement_TiKD7G",
+        "announcement_4L8qQV",
+        "announcement_3NUJgk",
+        "announcement_XLUXAN",
+        "announcement_V4AUVq",
+        "announcement_Dh9fBb",
+        "announcement_wUMHPt",
+        "announcement_rHeWKL",
+        "announcement_Cbhndn",
+        "announcement_LyPUnb",
+        "announcement_xeGgED",
+        "announcement_rfBe4g"
       ],
       "settings": {
-        "color_scheme": "scheme-1",
-        "show_line_separator": true,
-        "show_social": false,
-        "auto_rotate": false,
-        "change_slides_speed": 5,
-        "enable_country_selector": false,
-        "enable_language_selector": false
+        "bg_color": "#000",
+        "padding_top": 10,
+        "padding_bottom": 10,
+        "m_bottom": 20,
+        "font": "open_sans_n4",
+        "color": "#ffffff",
+        "desktopFontSize": 16,
+        "desktopTextTransfer": "none",
+        "scroll_position": "Left",
+        "animation_duration": 30
       }
     },
     "header": {
@@ -46,7 +209,7 @@
     }
   },
   "order": [
-    "announcement-bar",
+    "lm_announcement_bar_MBMrtU",
     "header"
   ]
 }
