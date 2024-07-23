@@ -39,37 +39,12 @@ import {
   purchaseSection,
   storeChargeinDatabase,
 } from "../models/payment.server";
-import { getAllSections } from "../models/section.server";
+import { addToMySections, getAllSections } from "../models/section.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
 
   try {
-    // const sections = await db.section.findMany();
-    // const charges = await db.charge.findMany({
-    //   where: {
-    //     shop: session.shop,
-    //   },
-    // });
-
-    // if (sections.length === 0) {
-    //   throw new Response("No sections found", { status: 404 });
-    // }
-
-    // // Make the section free for those who paid for it or they gave inspiration for the component
-    // const sectionsUpdated = sections.map((section) => {
-    //   const isFree =
-    //     charges.some(
-    //       (charge) =>
-    //         (charge.sectionId !== null &&
-    //           charge.sectionId === section.sectionId) ||
-    //         (charge.bundleId !== null && charge.bundleId === section.bundleId),
-    //     ) || section.store === session.shop;
-
-    //   section.free = isFree;
-    //   return section;
-    // });
-
     const sections = await getAllSections(session.shop);
 
     // get categories
@@ -135,6 +110,14 @@ export const action = async ({ request }) => {
         shop,
       });
       return redirect("/app/explore-sections");
+
+    case "addSection":
+      const res = await addToMySections(session.shop, id);
+      if (res.success) {
+        return redirect("/app/my-sections");
+      } else {
+        return json({ success: false, message: res.message });
+      }
   }
 };
 
@@ -190,6 +173,10 @@ export default function ExploreSections() {
     );
   };
 
+  const handleAddSection = (id) => {
+    submit({ id, submitType: "addSection" }, { method: "POST" });
+  };
+
   // Response from Action
   const response = useActionData();
 
@@ -197,6 +184,13 @@ export default function ExploreSections() {
   useEffect(() => {
     if (response && response.confirmationUrl) {
       window.top.location.href = response.confirmationUrl;
+    }
+
+    if (response && response.message) {
+      shopify.toast.show(response.message, {
+        duration: 5000,
+        isError: !response.success,
+      });
     }
   }, [response]);
 
@@ -369,9 +363,22 @@ export default function ExploreSections() {
 
                       {modalContent.price === 0 ||
                       modalContent.free === true ? (
-                        <Text variant="bodyMd" as="p" fontWeight="medium">
-                          You already possess this section
-                        </Text>
+                        modalContent.installed ? (
+                          <Text variant="bodyMd" as="p" fontWeight="medium">
+                            You already possess this section
+                          </Text>
+                        ) : (
+                          <Button
+                            fullWidth
+                            variant="primary"
+                            icon={ProductIcon}
+                            onClick={() =>
+                              handleAddSection(modalContent.sectionId)
+                            }
+                          >
+                            Install
+                          </Button>
+                        )
                       ) : (
                         <Button
                           fullWidth

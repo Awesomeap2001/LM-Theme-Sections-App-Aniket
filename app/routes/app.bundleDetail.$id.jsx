@@ -128,7 +128,7 @@ function BundlesDetails() {
 
   const handleRedirectDetailPage = (sectionId) => {
     // Use navigate function to change the route programmatically
-    navigate(`/app/bundleDetail/${id}/section/${sectionId}`);
+    navigate(`/app/sectionDetail/${sectionId}`);
   };
 
   // Section Purchase

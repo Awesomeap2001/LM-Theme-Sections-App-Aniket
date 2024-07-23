@@ -30,7 +30,7 @@ import {
 import { json } from "@remix-run/node";
 import db from "../db.server";
 import { authenticate } from "../shopify.server";
-import { getMySections } from "../models/section.server";
+import { getMyInstalledSections } from "../models/section.server";
 import { addSectionToTheme } from "../models/my-section.server";
 
 export const loader = async ({ request }) => {
@@ -42,7 +42,7 @@ export const loader = async ({ request }) => {
   });
 
   // get all MySections
-  const sections = await getMySections(session.shop);
+  const sections = await getMyInstalledSections(session.shop);
 
   const categories = await db.category.findMany();
   if (categories.length === 0) {
@@ -277,11 +277,14 @@ export default function MySections() {
   // Handling response
   const response = useActionData();
   useEffect(() => {
-    if (response) {
+    if (response && response.message) {
       shopify.toast.show(response.message, {
         duration: 5000,
         isError: !response.success,
       });
+      if (response.success) {
+        setPopoverActive(null);
+      }
     }
   }, [response]);
 

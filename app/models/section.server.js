@@ -13,6 +13,13 @@ export const getAllSections = async (shop) => {
       throw new Response("No sections found", { status: 404 });
     }
 
+    // Check if the section is installed by querying the my_section table
+    const installedCheck = await db.my_sections.findMany({
+      where: {
+        shop: shop,
+      },
+    });
+
     // Make the section free for those who paid for it or they gave inspiration for the component
     const sectionsUpdated = sections.map((section) => {
       const isFree =
@@ -22,6 +29,11 @@ export const getAllSections = async (shop) => {
               charge.sectionId === section.sectionId) ||
             (charge.bundleId !== null && charge.bundleId === section.bundleId),
         ) || section.store === shop;
+
+      const isInstalled = installedCheck.some(
+        (mySection) => mySection.sectionId === section.sectionId,
+      );
+      section.installed = isInstalled;
 
       section.free = isFree;
       return section;
@@ -99,6 +111,17 @@ export const getSectionDetails = async (shop, sectionId) => {
       throw new Response("Section Not Found", { status: 404 });
     }
 
+    // Check if the section is installed by querying the my_section table
+    const installedCheck = await db.my_sections.findFirst({
+      where: {
+        shop: shop,
+        sectionId: sectionId,
+      },
+    });
+
+    section.installed = installedCheck ? true : false;
+
+    // Check if the Customer Purchased the Bundle and the section is in the Bundle
     const checkBundleInCharge = await db.charge.findMany({
       where: {
         bundleId: section.bundleId,
@@ -118,11 +141,73 @@ export const getSectionDetails = async (shop, sectionId) => {
       section.free = false;
     }
 
-    console.log(section);
-
     return section;
   } catch (error) {
     console.error("Error fetching section details:", error);
     throw new Error("Failed to fetch section details");
+  }
+};
+
+// Add to My Sections
+export const addToMySections = async (shop, sectionId) => {
+  sectionId = parseInt(sectionId);
+  try {
+    const addSection = await db.my_sections.create({
+      data: {
+        shop,
+        sectionId,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Section added to My Sections",
+    };
+  } catch (error) {
+    console.error("Error adding section to My Sections:", error);
+    throw new Error("Failed to add section to My Sections");
+  }
+};
+
+// Get all My Sections
+export const getMyInstalledSections = async (shop) => {
+  try {
+    const mySections = await db.section.findMany({
+      where: {
+        my_sections: {
+          some: {
+            shop: shop,
+          },
+        },
+      },
+    });
+
+    return mySections;
+  } catch (error) {
+    console.error("Error fetching My Sections:", error);
+    throw new Error("Failed to fetch My Sections");
+  }
+};
+
+export const getRecentMySections = async (shop) => {
+  try {
+    const recentSections = await db.my_sections.findMany({
+      where: {
+        shop: shop,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 3,
+      include: {
+        section: true, // Include the related section data
+      },
+    });
+
+    const sections = recentSections.map((ms) => ms.section);
+    return sections;
+  } catch (error) {
+    console.error("Error fetching Recent Sections:", error);
+    throw new Error("Failed to fetch Recent Sections");
   }
 };

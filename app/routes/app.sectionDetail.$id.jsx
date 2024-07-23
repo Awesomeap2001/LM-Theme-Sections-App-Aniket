@@ -30,7 +30,7 @@ import {
 } from "@shopify/polaris-icons";
 // import db from "../db.server";
 import { authenticate } from "../shopify.server";
-import { getSectionDetails } from "../models/section.server";
+import { addToMySections, getSectionDetails } from "../models/section.server";
 import {
   purchaseSection,
   storeChargeinDatabase,
@@ -50,6 +50,7 @@ export const loader = async ({ params, request }) => {
     image: section.imgSrc,
     price: section.price,
     free: section.free,
+    installed: section.installed,
     details: JSON.parse(section.details),
     tags: JSON.parse(section.tags),
   });
@@ -90,11 +91,20 @@ export const action = async ({ request }) => {
         shop,
       });
       return redirect("/app/my-sections");
+
+    case "addSection":
+      const res = await addToMySections(session.shop, id);
+      if (res.success) {
+        return redirect("/app/my-sections");
+      } else {
+        return json({ success: false, message: res.message });
+      }
   }
 };
 
 function sectionsDetails() {
-  let { id, title, image, price, details, tags, free } = useLoaderData();
+  let { id, title, image, price, details, tags, free, installed } =
+    useLoaderData();
 
   // Section Purchase
   const submit = useSubmit();
@@ -112,6 +122,13 @@ function sectionsDetails() {
   useEffect(() => {
     if (response && response.confirmationUrl) {
       window.top.location.href = response.confirmationUrl;
+    }
+
+    if (response && response.message) {
+      shopify.toast.show(response.message, {
+        duration: 5000,
+        isError: !response.success,
+      });
     }
   }, [response]);
 
@@ -188,9 +205,25 @@ function sectionsDetails() {
                 </InlineStack>
 
                 {free || price === 0 ? (
-                  <Text variant="bodyMd" as="p">
-                    You already possess this bundle
-                  </Text>
+                  installed ? (
+                    <Text variant="bodyMd" as="p">
+                      You already possess this Section
+                    </Text>
+                  ) : (
+                    <Button
+                      fullWidth
+                      variant="primary"
+                      icon={ProductIcon}
+                      onClick={() =>
+                        submit(
+                          { id, submitType: "addSection" },
+                          { method: "POST" },
+                        )
+                      }
+                    >
+                      Install
+                    </Button>
+                  )
                 ) : (
                   <Button
                     fullWidth

@@ -380,12 +380,7 @@ export default function SectionInspiration() {
                   <Button
                     icon={ViewIcon}
                     fullWidth
-                    // target="_blank"
-                    external
                     url={`/app/sectionDetail/${gridItem.sectionId}`}
-                    // onClick={() =>
-                    //   navigate()
-                    // }
                   >
                     View Details
                   </Button>
