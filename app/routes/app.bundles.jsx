@@ -76,7 +76,7 @@ export default function Bundles() {
         <Layout.Section>
           <div className={styles.gridContainer}>
             {bundles.map((bundle) => (
-              <div key={bundle.id} className={styles.cardStack}>
+              <div key={bundle.bundleId} className={styles.cardStack}>
                 {[...Array(3)].map((_, stackIndex) => (
                   <div
                     key={stackIndex}
@@ -111,7 +111,7 @@ export default function Bundles() {
                       <Box
                         width="100%"
                         height="100%"
-                        backgroundColor="background"
+                        background="background"
                         borderRadius="12px"
                       />
                     )}

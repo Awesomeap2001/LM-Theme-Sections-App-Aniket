@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Card,
   Page,
@@ -21,11 +21,17 @@ import {
   ActionList,
 } from "@shopify/polaris";
 import "./css/my-sections-styles.css";
-import { useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from "@remix-run/react";
 import { json } from "@remix-run/node";
 import db from "../db.server";
 import { authenticate } from "../shopify.server";
-import { getMySections } from "../models/section.server";
+import { getMyInstalledSections } from "../models/section.server";
+import { addSectionToTheme } from "../models/my-section.server";
 
 export const loader = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
@@ -36,7 +42,7 @@ export const loader = async ({ request }) => {
   });
 
   // get all MySections
-  const sections = await getMySections(session.shop);
+  const sections = await getMyInstalledSections(session.shop);
 
   const categories = await db.category.findMany();
   if (categories.length === 0) {
@@ -67,61 +73,14 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const id = formData.get("id");
   const themeId = formData.get("themeId");
-  console.log("Theme Id- ", themeId);
-  console.log("Section Id-", id);
 
-  // const res = await admin.rest.resources.Asset({
-  //   session: session,
-  //   theme_id: themeId,
-  //   asset: { key: "sections/announcement-bar.liquid" },
-  // });
-
-  // console.log(res);
-
-  const asset = new admin.rest.resources.Asset({ session: session });
-
-  asset.theme_id = "168871166245";
-  asset.key = "sections/Aniket.liquid";
-  asset.value =
-    "<img src='backsoon-postit.png'><p>We are busy updating the store for you and will be back within the hour.</p>";
   try {
-    const res = await asset.save({
-      update: true,
-    });
-    console.log("🎁", res);
+    const res = await addSectionToTheme(id, themeId, session, admin);
+    return res;
   } catch (error) {
-    console.log("🧧Error Storing Assets");
+    console.error("Error adding section to theme:", error);
+    return json({ success: false, message: "Error adding section to Theme" });
   }
-
-  // const mainTheme = await fetchMainTheme(request);
-  // console.log(session.accessToken);
-
-  // const options = {
-  //   method: "PUT",
-  //   headers: {
-  //     "X-Shopify-Access-Token": session.accessToken,
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({
-  //     asset: {
-  //       key: "sections/Aniket.liquid",
-  //       value:
-  //         "<p>We are busy updating the store for you and will be back within the hour.</p>",
-  //     },
-  //   }),
-  // };
-  // fetch(
-  //   `https://${session.shop}/admin/api/2024-01/themes/${themeId}/assets.json`,
-  //   options,
-  // )
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     console.log("Data: ");
-  //     console.log(data);
-  //   })
-  //   .catch((error) => console.error("Error:" + error));
-
-  return null;
 };
 
 export default function MySections() {
@@ -289,8 +248,6 @@ export default function MySections() {
     indexOfLastItem,
   );
 
-  // console.log("Current Items:", currentItems); // Debug paginated data
-
   // Popover for Themes
   const togglePopoverActive = useCallback(
     (id) =>
@@ -316,6 +273,20 @@ export default function MySections() {
     // alert(`Section ${id} added to theme ${theme.name}`);
     submit({ id, themeId: theme.id }, { method: "POST" });
   };
+
+  // Handling response
+  const response = useActionData();
+  useEffect(() => {
+    if (response && response.message) {
+      shopify.toast.show(response.message, {
+        duration: 5000,
+        isError: !response.success,
+      });
+      if (response.success) {
+        setPopoverActive(null);
+      }
+    }
+  }, [response]);
 
   const rightArrow = () => {
     return (

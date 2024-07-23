@@ -128,7 +128,7 @@ function BundlesDetails() {
 
   const handleRedirectDetailPage = (sectionId) => {
     // Use navigate function to change the route programmatically
-    navigate(`/app/bundleDetail/${id}/section/${sectionId}`);
+    navigate(`/app/sectionDetail/${sectionId}`);
   };
 
   // Section Purchase
@@ -257,7 +257,7 @@ function BundlesDetails() {
                     icon={ProductIcon}
                     onClick={() => handlePurchase(id, title, price)}
                   >
-                    Buy this Section
+                    Buy this Bundle
                   </Button>
                 )}
               </BlockStack>

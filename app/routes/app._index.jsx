@@ -6,6 +6,9 @@ import {
   PlayIcon,
   NoteIcon,
   ChatIcon,
+  ViewIcon,
+  SearchRecentIcon,
+  ClockIcon,
 } from "@shopify/polaris-icons";
 import {
   Page,
@@ -24,10 +27,14 @@ import {
   Banner,
   Button,
   Box,
+  InlineGrid,
+  Badge,
+  Image,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import db from "../db.server";
+import { getMySections, getRecentMySections } from "../models/section.server";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -37,103 +44,95 @@ export const loader = async ({ request }) => {
   });
 
   const sectionCount = await db.section.count();
-  const mySectionCount = await db.section.count({
-    where: {
-      OR: [
-        {
-          store: session.shop,
-        },
-        {
-          charge: {
-            some: {
-              shop: session.shop,
-            },
-          },
-        },
-      ],
-    },
-  });
-  console.log(mySectionCount);
+  const mySectionCount = (await getMySections(session.shop)).length;
   const inspirationCount = await db.section_inspiration.count();
+
+  const recentSections = await getRecentMySections(session.shop);
 
   return json({
     shopName: data[0].name,
     sectionCount,
     mySectionCount,
     inspirationCount,
+    recentSections,
   });
 };
 
-export const action = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($input: ProductInput!) {
-        productCreate(input: $input) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
-  const variantId =
-    responseJson.data.productCreate.product.variants.edges[0].node.id;
-  const variantResponse = await admin.graphql(
-    `#graphql
-      mutation shopifyRemixTemplateUpdateVariant($input: ProductVariantInput!) {
-        productVariantUpdate(input: $input) {
-          productVariant {
-            id
-            price
-            barcode
-            createdAt
-          }
-        }
-      }`,
-    {
-      variables: {
-        input: {
-          id: variantId,
-          price: Math.random() * 100,
-        },
-      },
-    },
-  );
-  const variantResponseJson = await variantResponse.json();
+// export const action = async ({ request }) => {
+//   const { admin } = await authenticate.admin(request);
+//   const color = ["Red", "Orange", "Yellow", "Green"][
+//     Math.floor(Math.random() * 4)
+//   ];
+//   const response = await admin.graphql(
+//     `#graphql
+//       mutation populateProduct($input: ProductInput!) {
+//         productCreate(input: $input) {
+//           product {
+//             id
+//             title
+//             handle
+//             status
+//             variants(first: 10) {
+//               edges {
+//                 node {
+//                   id
+//                   price
+//                   barcode
+//                   createdAt
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }`,
+//     {
+//       variables: {
+//         input: {
+//           title: `${color} Snowboard`,
+//         },
+//       },
+//     },
+//   );
+//   const responseJson = await response.json();
+//   const variantId =
+//     responseJson.data.productCreate.product.variants.edges[0].node.id;
+//   const variantResponse = await admin.graphql(
+//     `#graphql
+//       mutation shopifyRemixTemplateUpdateVariant($input: ProductVariantInput!) {
+//         productVariantUpdate(input: $input) {
+//           productVariant {
+//             id
+//             price
+//             barcode
+//             createdAt
+//           }
+//         }
+//       }`,
+//     {
+//       variables: {
+//         input: {
+//           id: variantId,
+//           price: Math.random() * 100,
+//         },
+//       },
+//     },
+//   );
+//   const variantResponseJson = await variantResponse.json();
 
-  return json({
-    product: responseJson.data.productCreate.product,
-    variant: variantResponseJson.data.productVariantUpdate.productVariant,
-  });
-};
+//   return json({
+//     product: responseJson.data.productCreate.product,
+//     variant: variantResponseJson.data.productVariantUpdate.productVariant,
+//   });
+// };
 
 export default function Index() {
-  const { shopName, sectionCount, mySectionCount, inspirationCount } =
-    useLoaderData();
+  const {
+    shopName,
+    sectionCount,
+    mySectionCount,
+    inspirationCount,
+    recentSections,
+  } = useLoaderData();
   const [active, setActive] = useState(false);
   const navigate = useNavigate();
 
@@ -328,7 +327,7 @@ export default function Index() {
 
                   <Button
                     target="_blank"
-                    url="https://forms.gle/baN6tqXgAu2WnWW3A"
+                    url="https://forms.gle/ZX2Thqc7WtQWphoz8"
                     icon={ChatIcon}
                   >
                     Support
@@ -356,19 +355,59 @@ export default function Index() {
           <Layout.Section>
             <Card>
               {/* Description */}
-              <BlockStack gap="500">
-                <Text as="h2" variant="headingMd">
-                  Recent Layouts
-                </Text>
-                <Divider borderColor="border" />
-                <EmptyState
-                  heading="No layouts installed"
-                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                >
-                  <Text variant="bodyMd" as="p">
-                    View the library to add layouts to your theme
+              <BlockStack gap="200">
+                <Banner tone="info" icon={ClockIcon}>
+                  <Text as="h2" variant="headingMd">
+                    Recent Sections
                   </Text>
-                </EmptyState>
+                </Banner>
+                <Divider borderColor="border" />
+
+                {recentSections.length > 0 ? (
+                  <InlineGrid gap="300" columns={3}>
+                    {recentSections.map((section) => (
+                      <Card>
+                        <InlineGrid gap={300}>
+                          <Text variant="headingMd" as="h5">
+                            {section.title}
+                          </Text>
+                          <Image
+                            alt=""
+                            width="100%"
+                            height="100%"
+                            style={{
+                              objectFit: "cover",
+                              objectPosition: "center",
+                            }}
+                            source={section.imgSrc}
+                          />
+
+                          <Button
+                            icon={ViewIcon}
+                            fullWidth
+                            variant="primary"
+                            onClick={() =>
+                              navigate(
+                                `/app/sectionDetail/${section.sectionId}`,
+                              )
+                            }
+                          >
+                            View Details
+                          </Button>
+                        </InlineGrid>
+                      </Card>
+                    ))}
+                  </InlineGrid>
+                ) : (
+                  <EmptyState
+                    heading="No layouts installed"
+                    image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                  >
+                    <Text variant="bodyMd" as="p">
+                      View the library to add layouts to your theme
+                    </Text>
+                  </EmptyState>
+                )}
               </BlockStack>
             </Card>
           </Layout.Section>

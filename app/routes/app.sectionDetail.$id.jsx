@@ -1,5 +1,11 @@
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import {
+  redirect,
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Bleed,
   BlockStack,
@@ -22,57 +28,127 @@ import {
   PlusIcon,
   BillIcon,
 } from "@shopify/polaris-icons";
-import db from "../db.server";
+// import db from "../db.server";
 import { authenticate } from "../shopify.server";
+import { addToMySections, getSectionDetails } from "../models/section.server";
+import {
+  purchaseSection,
+  storeChargeinDatabase,
+} from "../models/payment.server";
+import { useEffect } from "react";
 
 export const loader = async ({ params, request }) => {
   const sectionId = parseInt(params.id);
   const { session } = await authenticate.admin(request);
 
-  // console.log(`Loading section with ID: ${sectionId}`); // Debug log
-
   // Fetch the section by sectionId and include related charges
-  const section = await db.section.findFirst({
-    where: { sectionId },
-    include: {
-      charge: {
-        where: {
-          sectionId: sectionId,
-          shop: session.shop,
-        },
-      }, // Include related charges
-    },
-  });
-
-  if (!section) {
-    console.error(`Section with ID: ${sectionId} not found`); // Error log
-    throw new Response("Section Not Found", { status: 404 });
-  }
-
-  if (section.charge.some((charge) => charge.sectionId === section.sectionId)) {
-    section.free = true;
-  } else if (section.store === session.shop) {
-    section.free = true;
-  } else {
-    section.free = false;
-  }
+  const section = await getSectionDetails(session.shop, sectionId);
 
   return json({
+    id: section.sectionId,
     title: section.title,
     image: section.imgSrc,
     price: section.price,
     free: section.free,
+    installed: section.installed,
     details: JSON.parse(section.details),
     tags: JSON.parse(section.tags),
   });
 };
 
+export const action = async ({ request }) => {
+  const { admin, session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const submitType = formData.get("submitType");
+  const id = formData.get("id");
+
+  switch (submitType) {
+    // Purchase Section i.e. Payment Gateway Integration
+    case "purchaseSection":
+      const name = formData.get("name");
+      const price = formData.get("price");
+      const returnUrl = `https://admin.shopify.com/store/${session.shop.replace(".myshopify.com", "")}/apps/${process.env.APP_NAME}/app/my-sections?type=SECTION&id=${id}`;
+      const response = await purchaseSection(admin.graphql, {
+        name,
+        price,
+        returnUrl,
+      });
+
+      const confirmationUrl =
+        response.data.appPurchaseOneTimeCreate.confirmationUrl;
+
+      return json({ confirmationUrl, sectionId: id });
+
+    // Store the ChargeId in database i.e. Store Payment Details
+    case "storeChargeData":
+      const type = formData.get("type");
+      const chargeId = formData.get("chargeId");
+      const shop = session.shop;
+      const result = await storeChargeinDatabase({
+        id,
+        type,
+        chargeId,
+        shop,
+      });
+      return redirect("/app/my-sections");
+
+    case "addSection":
+      const res = await addToMySections(session.shop, id);
+      if (res.success) {
+        return redirect("/app/my-sections");
+      } else {
+        return json({ success: false, message: res.message });
+      }
+  }
+};
+
 function sectionsDetails() {
-  let { title, image, price, details, tags, free } = useLoaderData();
+  let { id, title, image, price, details, tags, free, installed } =
+    useLoaderData();
+
+  // Section Purchase
+  const submit = useSubmit();
+  const handlePurchase = (id, name, price) => {
+    submit(
+      { id, name, price, submitType: "purchaseSection" },
+      { method: "POST" },
+    );
+  };
+
+  // Response from Action
+  const response = useActionData();
+
+  // Redirect to Payment URL
+  useEffect(() => {
+    if (response && response.confirmationUrl) {
+      window.top.location.href = response.confirmationUrl;
+    }
+
+    if (response && response.message) {
+      shopify.toast.show(response.message, {
+        duration: 5000,
+        isError: !response.success,
+      });
+    }
+  }, [response]);
+
+  // Get the ChargeId from URL after Payment Success
+  const [searchParams] = useSearchParams();
+  const chargeId = searchParams.get("charge_id");
+  const type = searchParams.get("type");
+
+  useEffect(() => {
+    if (chargeId) {
+      submit(
+        { chargeId, id, type, submitType: "storeChargeData" },
+        { method: "POST" },
+      );
+    }
+  }, [chargeId]);
 
   return (
     <Page
-      backAction={{ content: "Section", url: "/app/my-sections" }}
+      backAction={{ content: "Section", onAction: () => window.history.back() }}
       title={title}
     >
       <Layout>
@@ -129,17 +205,38 @@ function sectionsDetails() {
                 </InlineStack>
 
                 {free || price === 0 ? (
-                  <Button fullWidth variant="primary">
-                    Install
-                  </Button>
+                  installed ? (
+                    <Text variant="bodyMd" as="p">
+                      You already possess this Section
+                    </Text>
+                  ) : (
+                    <Button
+                      fullWidth
+                      variant="primary"
+                      icon={ProductIcon}
+                      onClick={() =>
+                        submit(
+                          { id, submitType: "addSection" },
+                          { method: "POST" },
+                        )
+                      }
+                    >
+                      Install
+                    </Button>
+                  )
                 ) : (
-                  <Button fullWidth variant="primary" icon={ProductIcon}>
+                  <Button
+                    fullWidth
+                    variant="primary"
+                    icon={ProductIcon}
+                    onClick={() => handlePurchase(id, title, price)}
+                  >
                     Buy this Section
                   </Button>
                 )}
               </BlockStack>
 
-              <Box paddingBlockStart="200">
+              <Box paddingBlockStart="200" visuallyHidden={free || price === 0}>
                 <InlineStack gap="050" blockAlign="center" align="center">
                   <Box as="span">
                     <Icon source={LockIcon} tone="base" />
