@@ -1,0 +1,64 @@
+{% comment %} <div class="lm-video-grid-section">
+  <h2>{{ section.settings.section_heading }}</h2>
+  <div class="lm-video-grid" style="--grid-columns: {{ section.settings.grid_columns }}">
+    {% for block in section.blocks %}
+      <div class="lm-video-item">
+        <iframe data-src="{{ block.settings.video_url }}" frameborder="0" allowfullscreen></iframe>
+        <p>{{ block.settings.video_title }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+    
+</script>
+
+<style>
+
+</style>
+
+
+{% schema %}
+{
+ "name": "👉 ĹМ Video Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Section Heading",
+      "default": "Our Videos"
+    },
+    {
+      "type": "number",
+      "id": "grid_columns",
+      "label": "Number of Columns",
+      "default": 4
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL"
+        },
+        {
+          "type": "text",
+          "id": "video_title",
+          "label": "Video Title"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Video Grid",
+      "category": "Custom Sections"
+    }
+  ]
+}
+{% endschema %} {% endcomment %}

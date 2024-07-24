@@ -66,10 +66,90 @@
         "padding_top": 44,
         "padding_bottom": 36
       }
+    },
+    "lm_testimonial_slider_YKa6Re": {
+      "type": "LM_Testimonial_Slider",
+      "blocks": {
+        "slide_Crzze3": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fff",
+            "image": "shopify:\/\/shop_images\/te-4.jpg",
+            "slide-text": "Your heading",
+            "slide-designation": "Your heading",
+            "desc": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.<\/p>"
+          }
+        },
+        "slide_XnRKpg": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fff",
+            "image": "shopify:\/\/shop_images\/te-3.jpg",
+            "slide-text": "Your heading",
+            "slide-designation": "Your heading",
+            "desc": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.<\/p>"
+          }
+        },
+        "slide_8TH3d6": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fff",
+            "image": "shopify:\/\/shop_images\/te-12.jpg",
+            "slide-text": "Your heading",
+            "slide-designation": "Your heading",
+            "desc": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.<\/p>"
+          }
+        },
+        "slide_ac6CKG": {
+          "type": "slide",
+          "settings": {
+            "box-bg-color": "#fff",
+            "image": "shopify:\/\/shop_images\/te-11.jpg",
+            "slide-text": "Your heading",
+            "slide-designation": "Your heading",
+            "desc": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "slide_Crzze3",
+        "slide_XnRKpg",
+        "slide_8TH3d6",
+        "slide_ac6CKG"
+      ],
+      "settings": {
+        "main-bg-color": "#FCF8F5",
+        "padding_top": 40,
+        "padding_bottom": 40,
+        "mobile-padding_top": 25,
+        "mobile-padding_bottom": 25,
+        "heading": "Enter heading here",
+        "heading-font-size": 40,
+        "mobile-heading-font-size": 30,
+        "heading-font-family": "sans-serif",
+        "heading-font-color": "#000",
+        "desktopTextAlign": "center",
+        "slide-heading-font-size": 24,
+        "slide-heading-font-family": "sans-serif",
+        "headingcolor": "#000",
+        "slide-designation": 14,
+        "slide-designation-font-family": "sans-serif",
+        "designationcolor": "#8C8C8C",
+        "desc-size": 15,
+        "desc-family": "sans-serif",
+        "desc-color": "#000",
+        "lm-pagination-color": "#000",
+        "desktop_slides_per_view": "3",
+        "miniDesktop_slides_per_view": "2",
+        "mobile_slides_per_view": "1",
+        "slide_autoplay_true_false": true,
+        "slide_autoplay_delay": 2500
+      }
     }
   },
   "order": [
     "image_banner",
-    "featured_collection"
+    "featured_collection",
+    "lm_testimonial_slider_YKa6Re"
   ]
 }

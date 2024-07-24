@@ -1,0 +1,74 @@
+
+
+<style>
+  #shopify-section-{{ section.id }} .lm-space {
+    height: {{ section.settings.height }}px;
+    display: block;
+  }
+  
+  @media only screen and (max-width: 1023px) {
+    #shopify-section-{{ section.id }} .lm-space {
+      height: {{ section.settings.medium_screen_height }}px;
+    }
+  }
+  
+  @media only screen and (max-width: 767px) {
+    #shopify-section-{{ section.id }} .lm-space {
+      height: {{ section.settings.small_screen_height }}px;
+    }
+  }  
+
+
+</style>
+
+<div class="lm-sections lm-space {{section.settings.class}}"></div>
+
+{% schema %}
+{
+  "name": "👉 ĹМ Spacer",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "height",
+      "min": 0,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Height",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "medium_screen_height",
+      "min": 0,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Height on medium screen",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "small_screen_height",
+      "min": 0,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Height on small screen",
+      "default": 20
+    },
+    {
+      "type": "text",
+      "id": "class",
+      "label": "CSS class",
+      "info": "Add class to this section, for example: my-class-1 my-class-2"
+    }
+  ],
+  "presets": [
+    {
+      "name": "👉 ĹМ Spacer"
+  }
+  ]
+}
+{% endschema %}
