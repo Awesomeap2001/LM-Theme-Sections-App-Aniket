@@ -21,6 +21,7 @@ import {
   Bleed,
   InlineGrid,
   Icon,
+  Pagination,
 } from "@shopify/polaris";
 import {
   useActionData,
@@ -142,6 +143,15 @@ export default function SectionInspiration() {
     tags: [],
     free: null,
   });
+
+  // Pagination
+  const itemsPerPage = 9;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Implement pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = gridItems.slice(indexOfFirstItem, indexOfLastItem);
 
   // Handle event for showing Template Details Modal
   const handleShowTemplateModal = useCallback(
@@ -305,8 +315,8 @@ export default function SectionInspiration() {
   return (
     <Page>
       {/* Page Title */}
-      <Box paddingBlockEnd="300">
-        <InlineStack align="space-between">
+      <Box paddingBlockEnd="300" paddingInline={{ xs: 200, sm: 0 }}>
+        <InlineStack align="space-between" gap={200}>
           <InlineStack blockAlign="center" gap={200}>
             <svg
               fill="#000000"
@@ -342,8 +352,8 @@ export default function SectionInspiration() {
 
       {/* Section Grid View */}
       <BlockStack gap="300">
-        <Grid columns={{ sm: 1, md: 2, lg: 3 }} gap="300">
-          {gridItems.map((gridItem, index) => (
+        <Grid columns={{ xs: 1, sm: 2, md: 3, lg: 3 }} gap="300">
+          {currentItems.map((gridItem, index) => (
             <Card key={index}>
               <InlineGrid gap={200}>
                 <InlineStack gap="200" wrap={false} align="space-between">
@@ -389,6 +399,28 @@ export default function SectionInspiration() {
             </Card>
           ))}
         </Grid>
+        <Box paddingBlock="400">
+          <InlineStack align="center">
+            <Pagination
+              hasPrevious={currentPage > 1}
+              onPrevious={() => {
+                setCurrentPage(currentPage - 1);
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              }}
+              hasNext={indexOfLastItem < gridItems.length}
+              onNext={() => {
+                setCurrentPage(currentPage + 1);
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              }}
+            />
+          </InlineStack>
+        </Box>
       </BlockStack>
 
       {/* Modal For Form */}

@@ -1,5 +1,6 @@
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
+import { handleEmailWebhook, onAppUninstall } from "../models/webhooks.server";
 
 export const action = async ({ request }) => {
   const { topic, shop, session, admin } = await authenticate.webhook(request);
@@ -14,7 +15,11 @@ export const action = async ({ request }) => {
   switch (topic) {
     case "APP_UNINSTALLED":
       if (session) {
+        await onAppUninstall(session);
         await db.session.deleteMany({ where: { shop } });
+        // await db.charge.deleteMany({ where: { shop } });
+        // await db.my_sections.deleteMany({ where: { shop } });
+        // await db.inspiration_suggestions.deleteMany({ where: { shop } });
       }
 
       break;

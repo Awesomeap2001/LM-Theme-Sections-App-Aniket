@@ -7,7 +7,6 @@ import {
   NoteIcon,
   ChatIcon,
   ViewIcon,
-  SearchRecentIcon,
   ClockIcon,
 } from "@shopify/polaris-icons";
 import {
@@ -28,8 +27,8 @@ import {
   Button,
   Box,
   InlineGrid,
-  Badge,
   Image,
+  FooterHelp,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { useLoaderData, useNavigate } from "@remix-run/react";
@@ -40,7 +39,7 @@ export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
   const { data } = await admin.rest.resources.Shop.all({
     session: session,
-    fields: "name",
+    fields: "shop_owner",
   });
 
   const sectionCount = await db.section.count();
@@ -50,11 +49,11 @@ export const loader = async ({ request }) => {
   const recentSections = await getRecentMySections(session.shop);
 
   return json({
-    shopName: data[0].name,
     sectionCount,
     mySectionCount,
     inspirationCount,
     recentSections,
+    name: data[0].shop_owner,
   });
 };
 
@@ -127,11 +126,11 @@ export const loader = async ({ request }) => {
 
 export default function Index() {
   const {
-    shopName,
     sectionCount,
     mySectionCount,
     inspirationCount,
     recentSections,
+    name,
   } = useLoaderData();
   const [active, setActive] = useState(false);
   const navigate = useNavigate();
@@ -142,9 +141,11 @@ export default function Index() {
     <Page>
       <BlockStack gap="500">
         {/* Dashboard Title */}
-        <Text variant="headingLg" as="h5">
-          Hi 👋, {shopName}!
-        </Text>
+        <Box paddingInline={{ xs: 200, sm: 0 }}>
+          <Text variant="headingLg" as="h5">
+            Hi 👋, {name}!
+          </Text>
+        </Box>
 
         <Layout>
           <Layout.Section>
@@ -174,7 +175,7 @@ export default function Index() {
 
                 {/* Show Counts */}
                 <Grid>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <Card>
                       <Text variant="bodyMd" as="p">
                         All Sections
@@ -184,7 +185,7 @@ export default function Index() {
                       </Text>
                     </Card>
                   </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <Card>
                       <Text variant="bodyMd" as="p">
                         My Sections
@@ -194,7 +195,7 @@ export default function Index() {
                       </Text>
                     </Card>
                   </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <Card>
                       <Text variant="bodyMd" as="p">
                         Section Inspirations
@@ -227,7 +228,7 @@ export default function Index() {
 
                 {/* Show Videos in Grid View */}
                 <Grid>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <MediaCard
                       portrait
                       title="Turn your side-project into a business"
@@ -240,7 +241,7 @@ export default function Index() {
                       />
                     </MediaCard>
                   </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <MediaCard
                       portrait
                       title="Turn your side-project into a business"
@@ -253,7 +254,7 @@ export default function Index() {
                       />
                     </MediaCard>
                   </Grid.Cell>
-                  <Grid.Cell columnSpan={{ xs: 4, sm: 3, md: 3, lg: 4, xl: 4 }}>
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 2, lg: 4 }}>
                     <MediaCard
                       portrait
                       title="Turn your side-project into a business"
@@ -364,9 +365,12 @@ export default function Index() {
                 <Divider borderColor="border" />
 
                 {recentSections.length > 0 ? (
-                  <InlineGrid gap="300" columns={3}>
+                  <InlineGrid
+                    gap="300"
+                    columns={{ xs: 1, sm: 2, md: 3, lg: 3 }}
+                  >
                     {recentSections.map((section) => (
-                      <Card>
+                      <Card key={section.sectionId}>
                         <InlineGrid gap={300}>
                           <Text variant="headingMd" as="h5">
                             {section.title}
@@ -413,7 +417,11 @@ export default function Index() {
           </Layout.Section>
         </Layout>
 
-        {/* Show Layout OverView */}
+        {/* Footer */}
+        <FooterHelp>
+          LM Theme Sections | All Rights Reserved &copy;{" "}
+          {new Date().getFullYear()}
+        </FooterHelp>
       </BlockStack>
     </Page>
   );
