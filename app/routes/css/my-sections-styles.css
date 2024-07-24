@@ -1,48 +1,44 @@
-
-
-  .image-container {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .grid-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    display: block;
-  }
-  
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color:rgba(230, 220, 220, 0.637);
-    display: flex;
-    align-items: center; /* Align items to the bottom */
-    justify-content: center; /* Align items to the right */
-    padding: 10px; /* Add some padding to avoid the icon sticking to the edge */
-    opacity: 0;
-    transition: opacity 0.3s;
-    cursor: pointer;;
-  }
-  
-  .image-container:hover .overlay {
-    opacity: 1;
-  }
-  
-  .overlay .Polaris-Icon {
-    width: 15px;
-    height: 15px;
-  }
-
-  .Polaris-Tabs__NewTab{
-    display: none;
-  }
-
-  button.Polaris-Button.Polaris-Button--pressable.Polaris-Button--variantSecondary.Polaris-Button--sizeMicro.Polaris-Button--textAlignCenter {
-    display: none;
+.image-container {
+  position: relative;
+  overflow: hidden;
 }
-  
-  
+
+.grid-image {
+  width: 100%;
+  /* height: 200px; */
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color:rgba(220, 220, 220, 0.5);
+  display: flex;
+  align-items: center; /* Align items to the bottom */
+  justify-content: center; /* Align items to the right */
+  padding: 10px; /* Add some padding to avoid the icon sticking to the edge */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;;
+}
+
+.image-container:hover .overlay {
+  opacity: 1;
+}
+
+.overlay .Polaris-Icon {
+  width: 15px;
+  height: 15px;
+}
+
+.Polaris-Tabs__NewTab{
+  display: none;
+}
+
+button.Polaris-Button.Polaris-Button--pressable.Polaris-Button--variantSecondary.Polaris-Button--sizeMicro.Polaris-Button--textAlignCenter {
+  display: none;
+}

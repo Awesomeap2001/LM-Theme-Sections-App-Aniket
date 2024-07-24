@@ -93,6 +93,7 @@ export default function MySections() {
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const itemsPerPage = 9; // Items per page
   const [popoverActive, setPopoverActive] = useState(null);
+  const [allSections, setAllSections] = useState(sections);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -114,15 +115,25 @@ export default function MySections() {
     setCurrentPage(1); // Reset to first page on search change
   }, []);
 
+  useEffect(() => {
+    let filteredImageGrids =
+      selected === 0
+        ? sections.filter((gridItem) =>
+            gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
+          )
+        : sections.filter(
+            (gridItem) =>
+              gridItem.categoryId === parseInt(categories[selected].id) &&
+              gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
+          );
+    setAllSections(filteredImageGrids);
+  }, [selected, searchQuery]);
+
   const sortOptions = [
-    { label: "Order", value: "order asc", directionLabel: "Ascending" },
-    { label: "Order", value: "order desc", directionLabel: "Descending" },
-    { label: "Customer", value: "customer asc", directionLabel: "A-Z" },
-    { label: "Customer", value: "customer desc", directionLabel: "Z-A" },
-    { label: "Date", value: "date asc", directionLabel: "A-Z" },
-    { label: "Date", value: "date desc", directionLabel: "Z-A" },
-    { label: "Total", value: "total asc", directionLabel: "Ascending" },
-    { label: "Total", value: "total desc", directionLabel: "Descending" },
+    { label: "Title", value: "title asc", directionLabel: "A-Z" },
+    { label: "Title", value: "title desc", directionLabel: "Z-A" },
+    { label: "Date", value: "date asc", directionLabel: "Ascending" },
+    { label: "Date", value: "date desc", directionLabel: "Descending" },
   ];
 
   const primaryAction = {
@@ -130,7 +141,7 @@ export default function MySections() {
     disabled: false,
     loading: false,
   };
-  const [sortSelected, setSortSelected] = useState(["order asc"]);
+  const [sortSelected, setSortSelected] = useState(["title asc"]);
   const [queryValue, setQueryValue] = useState("");
 
   const [accountStatus, setAccountStatus] = useState(undefined);
@@ -153,59 +164,59 @@ export default function MySections() {
     [],
   );
 
-  const filters = [
-    {
-      key: "accountStatus",
-      label: "Account status",
-      filter: (
-        <ChoiceList
-          title="Account status"
-          titleHidden
-          choices={[
-            { label: "Enabled", value: "enabled" },
-            { label: "Not invited", value: "not invited" },
-            { label: "Invited", value: "invited" },
-            { label: "Declined", value: "declined" },
-          ]}
-          selected={accountStatus || []}
-          onChange={handleAccountStatusChange}
-          allowMultiple
-        />
-      ),
-      shortcut: true,
-    },
-    {
-      key: "taggedWith",
-      label: "Tagged with",
-      filter: (
-        <TextField
-          label="Tagged with"
-          value={taggedWith}
-          onChange={handleTaggedWithChange}
-          autoComplete="off"
-          labelHidden
-        />
-      ),
-      shortcut: true,
-    },
-    {
-      key: "moneySpent",
-      label: "Money spent",
-      filter: (
-        <RangeSlider
-          label="Money spent is between"
-          labelHidden
-          value={moneySpent || [0, 500]}
-          prefix="$"
-          output
-          min={0}
-          max={2000}
-          step={1}
-          onChange={handleMoneySpentChange}
-        />
-      ),
-    },
-  ];
+  // const filters = [
+  //   {
+  //     key: "accountStatus",
+  //     label: "Account status",
+  //     filter: (
+  //       <ChoiceList
+  //         title="Account status"
+  //         titleHidden
+  //         choices={[
+  //           { label: "Enabled", value: "enabled" },
+  //           { label: "Not invited", value: "not invited" },
+  //           { label: "Invited", value: "invited" },
+  //           { label: "Declined", value: "declined" },
+  //         ]}
+  //         selected={accountStatus || []}
+  //         onChange={handleAccountStatusChange}
+  //         allowMultiple
+  //       />
+  //     ),
+  //     shortcut: true,
+  //   },
+  //   {
+  //     key: "taggedWith",
+  //     label: "Tagged with",
+  //     filter: (
+  //       <TextField
+  //         label="Tagged with"
+  //         value={taggedWith}
+  //         onChange={handleTaggedWithChange}
+  //         autoComplete="off"
+  //         labelHidden
+  //       />
+  //     ),
+  //     shortcut: true,
+  //   },
+  //   {
+  //     key: "moneySpent",
+  //     label: "Money spent",
+  //     filter: (
+  //       <RangeSlider
+  //         label="Money spent is between"
+  //         labelHidden
+  //         value={moneySpent || [0, 500]}
+  //         prefix="$"
+  //         output
+  //         min={0}
+  //         max={2000}
+  //         step={1}
+  //         onChange={handleMoneySpentChange}
+  //       />
+  //     ),
+  //   },
+  // ];
 
   const handleAccountStatusRemove = useCallback(
     () => setAccountStatus(undefined),
@@ -229,24 +240,51 @@ export default function MySections() {
     handleTaggedWithRemove,
   ]);
 
-  const filteredImageGrids =
-    selected === 0
-      ? sections.filter((gridItem) =>
-          gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-      : sections.filter(
-          (gridItem) =>
-            gridItem.categoryId === parseInt(categories[selected].id) &&
-            gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
+  // Filter the Section as per the search query
+  // let filteredImageGrids =
+  //   selected === 0
+  //     ? sections.filter((gridItem) =>
+  //         gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  //       )
+  //     : sections.filter(
+  //         (gridItem) =>
+  //           gridItem.categoryId === parseInt(categories[selected].id) &&
+  //           gridItem.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  //       );
+
+  // Sort the Sections
+  const sortSections = (sections, sortOption) => {
+    const [key, direction] = sortOption.split(" ");
+
+    if (key === "title") {
+      return sections.sort((a, b) => {
+        if (a.title < b.title) return direction === "asc" ? -1 : 1;
+        if (a.title > b.title) return direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    if (key === "date") {
+      return sections.sort((a, b) => {
+        if (a.my_sections[0].createdAt < b.my_sections[0].createdAt)
+          return direction === "asc" ? -1 : 1;
+        if (a.my_sections[0].createdAt > b.my_sections[0].createdAt)
+          return direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+  };
+
+  const handleOnSort = (value) => {
+    setSortSelected(value);
+    const sortedSections = sortSections(allSections, value[0]);
+    setAllSections(sortedSections);
+  };
 
   // Implement pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredImageGrids.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
+  const currentItems = allSections.slice(indexOfFirstItem, indexOfLastItem);
 
   // Popover for Themes
   const togglePopoverActive = useCallback(
@@ -303,9 +341,9 @@ export default function MySections() {
 
   return (
     <Page>
-      <BlockStack gap="500">
+      <BlockStack gap="400">
         <InlineStack blockAlign="center" gap="200">
-          <Box>
+          <Box paddingInlineStart={{ xs: 200, sm: 0 }}>
             <Icon source='<svg height="150px" id="Capa_1" style="enable-background:new 0 0 70 50;" version="1.1" viewBox="0 0 70 50" width="100px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M10,40H5c-2.762,0-5,2.238-5,5s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,40,10,40z M10,20H5c-2.762,0-5,2.238-5,5  s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,20,10,20z M10,0H5C2.238,0,0,2.238,0,5s2.238,5,5,5h5c2.762,0,5-2.238,5-5S12.762,0,10,0  z M30,10h35c2.762,0,5-2.238,5-5s-2.238-5-5-5H30c-2.762,0-5,2.238-5,5S27.238,10,30,10z M65,20H30c-2.762,0-5,2.238-5,5  s2.238,5,5,5h35c2.762,0,5-2.238,5-5S67.762,20,65,20z M65,40H30c-2.762,0-5,2.238-5,5s2.238,5,5,5h35c2.762,0,5-2.238,5-5  S67.762,40,65,40z"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>'></Icon>
           </Box>
           <Box>
@@ -316,33 +354,36 @@ export default function MySections() {
         </InlineStack>
 
         {/* Listing of Tabs With Search, Filters, and Sorting feature */}
-
-        <IndexFilters
-          sortOptions={sortOptions}
-          sortSelected={sortSelected}
-          queryValue={searchQuery}
-          onQueryChange={handleSearchChange}
-          queryPlaceholder="Searching in all"
-          onQueryClear={() => setSearchQuery("")}
-          onSort={setSortSelected}
-          primaryAction={primaryAction}
-          cancelAction={{
-            onAction: onHandleCancel,
-            disabled: false,
-            loading: false,
-          }}
-          tabs={categories}
-          selected={selected}
-          onSelect={handleTabChange}
-          filters={filters}
-          onClearAll={handleFiltersClearAll}
-          mode={mode}
-          setMode={setMode}
-        />
-        {/* <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange} /> */}
+        <Box borderRadius="300" overflowY="hidden" shadow="100">
+          <IndexFilters
+            sortOptions={sortOptions}
+            sortSelected={sortSelected}
+            queryValue={searchQuery}
+            onQueryChange={handleSearchChange}
+            queryPlaceholder="Search Section"
+            onQueryClear={() => setSearchQuery("")}
+            onSort={handleOnSort}
+            primaryAction={primaryAction}
+            cancelAction={{
+              onAction: onHandleCancel,
+              disabled: false,
+              loading: false,
+            }}
+            tabs={categories}
+            selected={selected}
+            onSelect={handleTabChange}
+            // filters={filters}
+            // onClearAll={handleFiltersClearAll}
+            filters={[]} // for no filters
+            onClearAll={() => {}} // for no filters
+            hideFilters
+            mode={mode}
+            setMode={setMode}
+          />
+        </Box>
 
         <BlockStack gap="300">
-          <Grid columns={{ sm: 1, md: 2, lg: 3 }} gap="300">
+          <Grid columns={{ xs: 1, sm: 2, md: 3, lg: 3 }} gap="300">
             {currentItems.map((gridItem, index) => (
               <Card key={index} sectioned>
                 <BlockStack gap="200">
@@ -409,9 +450,21 @@ export default function MySections() {
         >
           <Pagination
             hasPrevious={currentPage > 1}
-            onPrevious={() => setCurrentPage(currentPage - 1)}
-            hasNext={indexOfLastItem < filteredImageGrids.length}
-            onNext={() => setCurrentPage(currentPage + 1)}
+            onPrevious={() => {
+              setCurrentPage(currentPage - 1);
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }}
+            hasNext={indexOfLastItem < allSections.length}
+            onNext={() => {
+              setCurrentPage(currentPage + 1);
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }}
           />
         </div>
       </BlockStack>

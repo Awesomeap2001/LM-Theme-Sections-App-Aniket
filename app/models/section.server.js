@@ -180,6 +180,9 @@ export const getMyInstalledSections = async (shop) => {
           },
         },
       },
+      include: {
+        my_sections: true,
+      },
     });
 
     return mySections;

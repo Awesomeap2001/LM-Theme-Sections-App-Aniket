@@ -19,15 +19,20 @@ scopes = "write_products,read_themes,write_themes"
 redirect_urls = [
   "https://institute-planning-continually-rapidly.trycloudflare.com/auth/callback",
   "https://institute-planning-continually-rapidly.trycloudflare.com/auth/shopify/callback",
-  "https://institute-planning-continually-rapidly.trycloudflare.com/api/auth/callback"
+  "https://institute-planning-continually-rapidly.trycloudflare.com/api/auth/callback",
 ]
 
 [webhooks]
 api_version = "2024-07"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks"
+[webhooks.privacy_compliance]
+customer_deletion_url = "https://institute-planning-continually-rapidly.trycloudflare.com/api/webhooks/customer_deletion"
+customer_data_request_url = "https://institute-planning-continually-rapidly.trycloudflare.com/api/webhooks/customer_request"
+shop_deletion_url = "https://institute-planning-continually-rapidly.trycloudflare.com/gdpr_uninstall"
+
+[[webhooks.subscriptions]]
+topics = ["app/uninstalled"]
+uri = "/webhooks"
 
 [pos]
 embedded = false
