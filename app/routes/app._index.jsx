@@ -141,7 +141,7 @@ export default function Index() {
     <Page>
       <BlockStack gap="500">
         {/* Dashboard Title */}
-        <Box paddingInline={{ xs: 200, sm: 0 }}>
+        <Box paddingInline={{ xs: 400, sm: 0 }}>
           <Text variant="headingLg" as="h5">
             Hi 👋, {name}!
           </Text>
